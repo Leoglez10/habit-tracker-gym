@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Disciplina">
+    <meta name="theme-color" content="#000000">
+    <title>SISTEMA DE DISCIPLINA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --accent: #00FF41;
+            --fail: #FF0000;
+            --warning: #FFD700;
+            --rest: #00D0FF;
+            --card: #0a0a0a;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Respeta el notch y la barra de gestos del móvil en modo app. */
+            padding: calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Racha Gigante */
+        .streak-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .streak-number {
+            font-size: 6rem;
+            font-family: 'Bebas Neue';
+            line-height: 0.8;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        .streak-label { font-size: 1rem; letter-spacing: 3px; color: #555; }
+        .record-label { font-size: 0.75rem; letter-spacing: 2px; color: #444; margin-top: 8px; }
+        .record-label b { color: var(--warning); }
+
+        /* Rango */
+        .rank-badge {
+            background: #222;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        /* Preguntas */
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            margin-top: 40px;
+        }
+
+        .question-box {
+            background: var(--card);
+            border: 2px solid #1a1a1a;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+        }
+
+        h2 { font-family: 'Bebas Neue'; font-size: 2.5rem; margin-bottom: 20px; }
+
+        .btn {
+            width: 100%;
+            padding: 30px;
+            margin: 10px 0;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.1s;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* Feedback táctil: el botón se hunde un poco al tocar. */
+        .btn:active { transform: scale(0.97); filter: brightness(0.9); }
+
+        .btn-yes { 
+            background: var(--accent); 
+            color: black; 
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+        .btn-no { 
+            background: #111; 
+            color: #444; 
+            border: 1px solid #222;
+        }
+        .btn-no:active { background: var(--fail); color: white; }
+        .btn-rest {
+            background: #0a1a22;
+            color: var(--rest);
+            border: 1px solid var(--rest);
+            box-shadow: 0 0 12px rgba(0, 200, 255, 0.15);
+        }
+
+        /* Calendario Mensual */
+        .calendar {
+            width: 100%;
+            max-width: 450px;
+            margin-top: 40px;
+        }
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .cal-title {
+            font-family: 'Bebas Neue';
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            color: #ddd;
+        }
+        .cal-nav {
+            background: #111;
+            border: 1px solid #222;
+            color: var(--accent);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-nav:active { background: #1a1a1a; transform: scale(0.94); }
+        .cal-nav:disabled { opacity: 0.25; cursor: default; }
+        .cal-weekdays, .history-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+        .cal-weekdays span {
+            text-align: center;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            color: #444;
+            padding-bottom: 6px;
+        }
+        .history-grid { margin-top: 0; }
+
+        .day-dot {
+            aspect-ratio: 1;
+            background: #111;
+            border-radius: 6px;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .day-dot.empty { background: transparent; }
+        .day-dot.today { outline: 2px solid #fff; outline-offset: -2px; }
+        .day-dot.perfect { background: var(--accent); color: black; box-shadow: 0 0 10px var(--accent); }
+        .day-dot.rest { background: var(--rest); color: black; box-shadow: 0 0 10px var(--rest); }
+        .day-dot.half { border: 2px solid var(--warning); color: var(--warning); }
+        .day-dot.failed { border: 1px solid #333; color: #555; }
+
+        .reset-btn {
+            margin-top: 20px;
+            background: none;
+            border: none;
+            color: #333;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="streak-container">
+        <div class="streak-label">RACHA ACTUAL</div>
+        <div class="streak-number" id="streak-count">0</div>
+        <div class="rank-badge" id="rank-name">RECLUTA</div>
+        <div class="record-label">RÉCORD: <b id="record-count">0</b> DÍAS</div>
+    </div>
+
+    <div class="main-container">
+        <div id="q-exercise" class="question-box">
+            <h2>¿ENTRENASTE HOY?</h2>
+            <button class="btn btn-yes" onclick="logData('exercise', true)">SÍ, LO HICE 💪</button>
+            <button class="btn btn-rest" onclick="logData('exercise', 'rest')">DÍA DE DESCANSO 🛌</button>
+            <button class="btn btn-no" onclick="logData('exercise', false)">NO, HOY NO</button>
+        </div>
+
+        <div id="q-food" class="question-box hidden">
+            <h2>¿COMISTE LIMPIO?</h2>
+            <button class="btn btn-yes" onclick="logData('food', true)">LO HICE 🥗</button>
+            <button class="btn btn-no" onclick="logData('food', false)">NO, BASURA :(</button>
+        </div>
+
+        <div id="finished" class="question-box hidden">
+            <h2 id="final-msg">DÍA REGISTRADO</h2>
+            <button class="reset-btn" onclick="resetToday()">Corregir error de hoy</button>
+        </div>
+    </div>
+
+    <div class="calendar">
+        <div class="cal-header">
+            <button class="cal-nav" id="cal-prev" onclick="changeMonth(-1)" aria-label="Mes anterior">‹</button>
+            <div class="cal-title" id="cal-title" onclick="goToday()"></div>
+            <button class="cal-nav" id="cal-next" onclick="changeMonth(1)" aria-label="Mes siguiente">›</button>
+        </div>
+        <div class="cal-weekdays">
+            <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+        <div class="history-grid" id="history-grid"></div>
+        <button class="reset-btn hidden" id="cal-today" onclick="goToday()" style="display:none">↩ VOLVER A HOY</button>
+    </div>
+
+    <script>
+        let history = JSON.parse(localStorage.getItem('disciplineLog')) || {};
+
+        // Fecha en formato YYYY-MM-DD usando hora LOCAL (no UTC),
+        // para que "hoy" no se descuadre cerca de medianoche.
+        function localKey(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        const today = localKey(new Date());
+        // Reanuda respuestas parciales si recargaste a mitad del registro.
+        let currentDay = history[today] || { exercise: null, food: null };
+
+        function logData(type, value) {
+            currentDay[type] = value;
+            persist(); // guarda tras cada respuesta (no se pierde al recargar)
+            if (type === 'exercise') {
+                document.getElementById('q-exercise').classList.add('hidden');
+                document.getElementById('q-food').classList.remove('hidden');
+            } else {
+                flashDone();
+                updateUI();
+            }
+        }
+
+        function persist() {
+            history[today] = currentDay;
+            localStorage.setItem('disciplineLog', JSON.stringify(history));
+        }
+
+        function resetToday() {
+            if (!confirm('¿Borrar el registro de hoy y empezar de nuevo?')) return;
+            delete history[today];
+            localStorage.setItem('disciplineLog', JSON.stringify(history));
+            location.reload();
+        }
+
+        // Feedback al cerrar el día: parpadeo verde + vibración en móvil.
+        function flashDone() {
+            if (navigator.vibrate) navigator.vibrate(60);
+            const flash = document.createElement('div');
+            flash.style.cssText =
+                'position:fixed;inset:0;background:var(--accent);opacity:.35;' +
+                'pointer-events:none;transition:opacity .5s;z-index:9999';
+            document.body.appendChild(flash);
+            requestAnimationFrame(() => { flash.style.opacity = '0'; });
+            setTimeout(() => flash.remove(), 600);
+        }
+
+        function updateUI() {
+            const done = currentDay.exercise !== null && currentDay.food !== null;
+            if (done) {
+                document.getElementById('q-exercise').classList.add('hidden');
+                document.getElementById('q-food').classList.add('hidden');
+                document.getElementById('finished').classList.remove('hidden');
+                document.getElementById('final-msg').innerText = finalMessage();
+            } else if (currentDay.exercise !== null) {
+                // Entrenó pero falta comida: salta directo a la pregunta de comida.
+                document.getElementById('q-exercise').classList.add('hidden');
+                document.getElementById('q-food').classList.remove('hidden');
+            }
+            renderStats();
+            renderGrid();
+        }
+
+        // Mensaje al cerrar el día, según lo que hiciste.
+        function finalMessage() {
+            const d = currentDay;
+            if (d.exercise === true && d.food) return 'DÍA CONQUISTADO 🔥';
+            if (d.exercise === 'rest' && d.food) return 'DESCANSO MERECIDO 🛌';
+            if (d.exercise === true || d.exercise === 'rest' || d.food) return 'A MEDIAS. MAÑANA TODO.';
+            return 'DÍA PERDIDO. LEVÁNTATE.';
+        }
+
+        // ¿El día cuenta para la racha? Comiste bien Y (entrenaste O descansaste).
+        // El día de descanso planeado NO rompe la racha.
+        function isGood(day) {
+            return !!(day && day.food && (day.exercise === true || day.exercise === 'rest'));
+        }
+
+        function renderStats() {
+            // Racha ACTUAL: días válidos consecutivos en el calendario,
+            // empezando hoy (o ayer si hoy aún no se registra). Cualquier
+            // hueco o día no-válido la rompe.
+            let streak = 0;
+            const t = history[today];
+            const todayComplete = t && t.exercise !== null && t.food !== null;
+
+            if (todayComplete && !isGood(t)) {
+                // Cerraste el día de hoy y NO cuenta: la racha se rompe a 0.
+                streak = 0;
+            } else {
+                // Hoy válido, o aún sin terminar/registrar: mide racha consecutiva.
+                let cursor = new Date();
+                if (!isGood(t)) cursor.setDate(cursor.getDate() - 1); // gracia: hasta ayer
+                while (isGood(history[localKey(cursor)])) {
+                    streak++;
+                    cursor.setDate(cursor.getDate() - 1);
+                }
+            }
+
+            // RÉCORD histórico: racha consecutiva más larga de todo el historial.
+            let best = 0, run = 0, prev = null;
+            const days = Object.keys(history).sort();
+            for (const k of days) {
+                if (!isGood(history[k])) { run = 0; prev = k; continue; }
+                if (prev !== null) {
+                    const gap = (new Date(k) - new Date(prev)) / 86400000;
+                    run = (isGood(history[prev]) && Math.round(gap) === 1) ? run + 1 : 1;
+                } else {
+                    run = 1;
+                }
+                if (run > best) best = run;
+                prev = k;
+            }
+            best = Math.max(best, streak);
+
+            document.getElementById('streak-count').innerText = streak;
+            document.getElementById('record-count').innerText = best;
+
+            // Rango
+            let rank = "RECLUTA";
+            if (streak > 20) rank = "LEYENDA";
+            else if (streak > 10) rank = "ESPARTANO";
+            else if (streak > 3) rank = "GUERRERO";
+            document.getElementById('rank-name').innerText = rank;
+        }
+
+        // Mes que se está viendo en el calendario (1º del mes actual por defecto).
+        const MESES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO',
+                       'JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+        let viewMonth = new Date();
+        viewMonth.setDate(1);
+
+        function changeMonth(delta) {
+            viewMonth.setMonth(viewMonth.getMonth() + delta);
+            renderGrid();
+        }
+        function goToday() {
+            viewMonth = new Date();
+            viewMonth.setDate(1);
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('history-grid');
+            grid.innerHTML = '';
+
+            const year = viewMonth.getFullYear();
+            const month = viewMonth.getMonth();
+            document.getElementById('cal-title').innerText = `${MESES[month]} ${year}`;
+
+            // Deshabilita "›" si ya estamos en el mes actual (no hay futuro que ver).
+            const now = new Date();
+            const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
+            document.getElementById('cal-next').disabled = isCurrentMonth;
+            document.getElementById('cal-today').style.display = isCurrentMonth ? 'none' : 'block';
+
+            // Celdas vacías hasta el primer día (lunes = columna 0).
+            const firstDay = new Date(year, month, 1);
+            let offset = (firstDay.getDay() + 6) % 7; // getDay: 0=domingo -> lunes primero
+            for (let i = 0; i < offset; i++) {
+                const blank = document.createElement('div');
+                blank.className = 'day-dot empty';
+                grid.appendChild(blank);
+            }
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const d = new Date(year, month, day);
+                const dayStr = localKey(d);
+                const data = history[dayStr];
+
+                const dot = document.createElement('div');
+                dot.className = 'day-dot';
+                dot.innerText = day;
+
+                if (dayStr === today) dot.classList.add('today');
+
+                if (data) {
+                    if (data.exercise === true && data.food) dot.classList.add('perfect');
+                    else if (data.exercise === 'rest' && data.food) dot.classList.add('rest');
+                    else if (data.exercise || data.food) dot.classList.add('half');
+                    else dot.classList.add('failed');
+                }
+                grid.appendChild(dot);
+            }
+        }
+
+        updateUI();
+
+        // Registra el service worker (necesario para instalar como app / offline).
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
