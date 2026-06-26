@@ -1236,10 +1236,34 @@
             'LA MOTIVACIÓN TE ARRANCA. EL HÁBITO TE MANTIENE.',
             'GANAR DUELE MENOS QUE ARREPENTIRSE.',
             'SI FUERA FÁCIL, LO HARÍA CUALQUIERA.',
+            'LA CONSTANCIA VENCE AL TALENTO.',
+            'NO BUSQUES EXCUSAS, BUSCA RESULTADOS.',
+            'EL ÉXITO EMPIEZA DONDE TERMINA TU ZONA DE CONFORT.',
+            'UN DÍA MÁS, UNA VICTORIA MÁS.',
+            'TU CUERPO ESCUCHA TODO LO QUE TU MENTE DICE.',
+            'NO TIENES QUE SER EL MEJOR, SOLO MEJOR QUE AYER.',
+            'EL SUDOR DE HOY ES LA FUERZA DE MAÑANA.',
+            'DEJA DE DESEARLO. EMPIEZA A HACERLO.',
+            'LOS LÍMITES SOLO EXISTEN EN TU CABEZA.',
+            'PEQUEÑOS PASOS TODOS LOS DÍAS.',
+            'NADIE DIJO QUE SERÍA FÁCIL, DIJERON QUE VALDRÍA LA PENA.',
+            'ENTRENA COMO SI TODO DEPENDIERA DE TI.',
+            'EL HÁBITO ES MÁS FUERTE QUE LA MOTIVACIÓN.',
+            'CUANDO QUIERAS RENDIRTE, RECUERDA POR QUÉ EMPEZASTE.',
+            'LA FUERZA NO VIENE DE GANAR, VIENE DE NO RENDIRSE.',
+            'HOY ODIAS EL ESFUERZO, MAÑANA AMARÁS EL RESULTADO.',
+            'TU FUTURO SE CONSTRUYE CON LO QUE HACES HOY.',
+            'NO CUENTES LAS REPS, HAZ QUE CADA REP CUENTE.',
+            'CONVIERTE EL "NO PUEDO" EN "LO HICE".',
+            'EL ÉXITO ES LA SUMA DE PEQUEÑOS ESFUERZOS REPETIDOS.',
+            'CADA GOTA DE SUDOR ES UNA INVERSIÓN EN TI.',
+            'LO QUE NO TE RETA, NO TE CAMBIA.',
+            'SÉ MÁS FUERTE QUE TUS EXCUSAS.',
+            'LA DISCIPLINA ES EL PUENTE ENTRE METAS Y LOGROS.',
         ];
         function setDailyQuote() {
-            const day = Math.floor(new Date(today).getTime() / 86400000);
-            document.getElementById('daily-quote').innerText = QUOTES[day % QUOTES.length];
+            const i = Math.floor(Math.random() * QUOTES.length);
+            document.getElementById('daily-quote').innerText = QUOTES[i];
         }
 
         // #5 Hitos: celebra al cruzar un umbral por primera vez.
