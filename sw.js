@@ -1,5 +1,5 @@
 // Service worker mínimo: cachea la app para que funcione sin internet.
-const CACHE = 'disciplina-v2';
+const CACHE = 'disciplina-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,8 @@ self.addEventListener('activate', (e) => {
 // y "cache-first" para el resto. Si no hay red, tira del cache.
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // No interceptar peticiones a otros dominios (Supabase Auth/API, CDN): van directo a la red.
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     fetch(e.request)
       .then((res) => {

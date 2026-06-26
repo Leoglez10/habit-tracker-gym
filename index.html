@@ -12,6 +12,7 @@
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Aplica el tema guardado antes de pintar para evitar parpadeo. -->
     <script>const _t = localStorage.getItem('theme'); if (_t) document.documentElement.dataset.theme = _t;</script>
     <style>
@@ -221,6 +222,18 @@
         .day-dot.empty { background: transparent; }
         .day-dot.today { outline: 2px solid var(--text); outline-offset: -2px; }
         .day-dot.perfect { background: var(--accent); color: black; box-shadow: 0 0 10px var(--accent); }
+        .day-dot.legendary {
+            color: #4a3500;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700 0%, #FFF1A8 45%, #FFB800 100%);
+            background-size: 200% 200%;
+            box-shadow: 0 0 12px #FFD700, 0 0 4px #fff inset;
+            animation: shiny 2.2s ease-in-out infinite;
+        }
+        @keyframes shiny {
+            0%, 100% { background-position: 0% 50%; box-shadow: 0 0 8px #FFD700, 0 0 4px #fff inset; }
+            50%      { background-position: 100% 50%; box-shadow: 0 0 18px #FFD700, 0 0 6px #fff inset; }
+        }
         .day-dot.rest { background: var(--rest); color: black; box-shadow: 0 0 10px var(--rest); }
         .day-dot.half { border: 2px solid var(--warning); color: var(--warning); }
         .day-dot.failed {
@@ -229,6 +242,32 @@
             color: var(--fail);
             box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
         }
+
+        .stats-presets, .stats-range {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            justify-content: center; margin: 12px 0;
+        }
+        .stats-range { align-items: flex-end; font-size: 0.7rem; color: var(--text-dim); }
+        .stats-range label { display: flex; flex-direction: column; gap: 4px; }
+        .stats-range input[type="date"] {
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border); border-radius: 6px; padding: 6px;
+        }
+        .btn-period {
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 8px 14px; cursor: pointer; font-weight: 700; font-size: 0.75rem;
+        }
+        .btn-period:hover { border-color: var(--accent); }
+        .stat-line { margin: 10px 0; text-align: left; }
+        .stat-line .stat-top {
+            display: flex; justify-content: space-between;
+            font-size: 0.8rem; margin-bottom: 4px; color: var(--text-dim);
+        }
+        .stat-line .stat-top b { color: var(--text); }
+        .stat-line .bar { background: var(--surface); border-radius: 6px; height: 10px; overflow: hidden; }
+        .stat-line .bar > div { height: 100%; border-radius: 6px; transition: width .4s; }
+        .stats-range-lbl { font-size: 0.7rem; color: var(--text-faint); margin-bottom: 8px; }
 
         .reset-btn {
             margin-top: 20px;
@@ -263,12 +302,37 @@
         .day-dot.editable { cursor: pointer; }
 
         /* Backup de datos */
-        .data-row { display: flex; gap: 24px; justify-content: center; margin-top: 28px; }
+        .data-row { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
         .data-btn {
-            background: none; border: none; color: var(--text-faint); text-decoration: underline;
-            cursor: pointer; font-size: .75rem; letter-spacing: .5px;
+            flex: 1; max-width: 220px;
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px 16px; cursor: pointer;
+            font-size: .8rem; font-weight: 700; letter-spacing: .5px;
+            transition: border-color .15s, transform .1s;
         }
-        .data-btn:active { color: var(--accent); }
+        .data-btn:hover { border-color: var(--accent); }
+        .data-btn:active { border-color: var(--accent); transform: scale(.97); }
+
+        .auth-bar { display: flex; justify-content: center; margin: 14px 0 0; min-height: 40px; }
+        .google-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: #fff; color: #1f1f1f;
+            border: 1px solid #dadce0; border-radius: 10px;
+            padding: 10px 18px; cursor: pointer;
+            font-size: .85rem; font-weight: 700;
+        }
+        .google-btn:active { transform: scale(.97); }
+        .user-box { display: flex; align-items: center; gap: 10px; font-size: .75rem; color: var(--text-dim); }
+        .user-email { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cloud-status { color: var(--accent); font-weight: 700; }
+        .cloud-status.saving { color: var(--warning); }
+        .logout-btn {
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 6px 12px; cursor: pointer; font-size: .7rem; font-weight: 700;
+        }
+        .logout-btn:hover { border-color: var(--fail); }
 
         .hidden { display: none; }
 
@@ -345,6 +409,18 @@
 </head>
 <body>
 
+    <div id="auth-bar" class="auth-bar">
+        <button id="login-btn" class="google-btn hidden" onclick="loginGoogle()">
+            <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.6 34.6 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.4l6.6 5.6C41.4 35.8 44 30.3 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+            Entrar con Google
+        </button>
+        <div id="user-box" class="user-box hidden">
+            <span id="user-email" class="user-email"></span>
+            <span id="cloud-status" class="cloud-status">☁️ Guardado</span>
+            <button class="logout-btn" onclick="logout()">Salir</button>
+        </div>
+    </div>
+
     <div id="danger-banner" class="danger-banner hidden"></div>
 
     <div class="streak-container">
@@ -372,6 +448,12 @@
             <button class="btn btn-yes" onclick="logData('exercise', true)">SÍ, LO HICE 💪</button>
             <button class="btn btn-rest" onclick="logData('exercise', 'rest')">DÍA DE DESCANSO 🛌</button>
             <button class="btn btn-no" onclick="logData('exercise', false)">NO, HOY NO</button>
+        </div>
+
+        <div id="q-cardio" class="question-box hidden">
+            <h2>¿HICISTE CARDIO?</h2>
+            <button class="btn btn-yes" onclick="logData('cardio', true)">SÍ, CARDIO 🏃</button>
+            <button class="btn btn-no" onclick="logData('cardio', false)">NO, HOY NO</button>
         </div>
 
         <div id="q-food" class="question-box hidden">
@@ -420,7 +502,8 @@
                 <button class="btn btn-no" onclick="closeDayModal()">SOLO VER, CERRAR</button>
             </div>
             <div id="modal-edit" class="hidden">
-                <button class="btn btn-yes" onclick="setDay('perfect')">DÍA PERFECTO 💪</button>
+                <button class="btn btn-yes" onclick="setDay('legendary')">DÍA PERFECTO ✨</button>
+                <button class="btn btn-yes" onclick="setDay('perfect')">ENTRENO + COMIDA 💪</button>
                 <button class="btn btn-rest" onclick="setDay('rest')">DESCANSO 🛌</button>
                 <button class="btn btn-no" onclick="setDay('failed')">DÍA FALLADO ❌</button>
                 <button class="reset-btn" onclick="setDay('clear')">Borrar este día</button>
@@ -428,7 +511,28 @@
         </div>
     </div>
 
+    <div id="stats-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeStats()">
+        <div class="modal-box">
+            <div class="modal-date">📊 ESTADÍSTICAS</div>
+            <div class="stats-presets">
+                <button class="btn-period" onclick="statsPreset('week')">SEMANA</button>
+                <button class="btn-period" onclick="statsPreset('fortnight')">QUINCENA</button>
+                <button class="btn-period" onclick="statsPreset('month')">MES</button>
+            </div>
+            <div class="stats-range">
+                <label>Desde <input type="date" id="stats-from"></label>
+                <label>Hasta <input type="date" id="stats-to"></label>
+                <button class="btn-period" onclick="statsCustom()">VER RANGO</button>
+            </div>
+            <div id="stats-report"></div>
+            <button class="btn btn-no" style="margin-top:18px" onclick="closeStats()">CERRAR</button>
+        </div>
+    </div>
+
     <div class="data-row">
+        <button class="data-btn" onclick="openStats()">📊 ESTADÍSTICAS</button>
+    </div>
+    <div class="data-row" id="backup-row">
         <button class="data-btn" onclick="exportData()">⬇ EXPORTAR COPIA</button>
         <button class="data-btn" onclick="document.getElementById('import-file').click()">⬆ IMPORTAR</button>
         <input type="file" id="import-file" accept="application/json,.json" class="hidden" onchange="importData(this)">
@@ -449,6 +553,15 @@
     <script>
         let history = JSON.parse(localStorage.getItem('disciplineLog')) || {};
 
+        // ---- Supabase: rellena estos 2 valores (Settings -> API en tu proyecto) ----
+        const SUPABASE_URL  = 'https://dhecaywifmfikmtdecxq.supabase.co';
+        const SUPABASE_ANON = 'sb_publishable_c94tRettdEWk50XmfYnoGg_EQFcd99N';
+        // Si no está configurado (o no cargó la librería), la app funciona solo-local.
+        const sb = (SUPABASE_URL.includes('TU-PROYECTO') || typeof supabase === 'undefined')
+                 ? null : supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+        let user = null;
+        let syncT = null;
+
         // Fecha en formato YYYY-MM-DD usando hora LOCAL (no UTC),
         // para que "hoy" no se descuadre cerca de medianoche.
         function localKey(d) {
@@ -460,13 +573,18 @@
 
         const today = localKey(new Date());
         // Reanuda respuestas parciales si recargaste a mitad del registro.
-        let currentDay = history[today] || { exercise: null, food: null };
+        let currentDay = history[today] || { exercise: null, cardio: null, food: null };
 
         function logData(type, value) {
             currentDay[type] = value;
             persist(); // guarda tras cada respuesta (no se pierde al recargar)
             if (type === 'exercise') {
                 document.getElementById('q-exercise').classList.add('hidden');
+                // Solo se pregunta cardio si entrenaste; descanso/no salta a comida.
+                if (value === true) document.getElementById('q-cardio').classList.remove('hidden');
+                else document.getElementById('q-food').classList.remove('hidden');
+            } else if (type === 'cardio') {
+                document.getElementById('q-cardio').classList.add('hidden');
                 document.getElementById('q-food').classList.remove('hidden');
             } else {
                 flashDone();
@@ -476,13 +594,89 @@
 
         function persist() {
             history[today] = currentDay;
-            localStorage.setItem('disciplineLog', JSON.stringify(history));
+            saveHistory();
         }
 
-        function resetToday() {
+        // Guarda en local SIEMPRE y, si hay sesión, sube a la nube con debounce.
+        function saveHistory() {
+            localStorage.setItem('disciplineLog', JSON.stringify(history));
+            if (!sb || !user) return;
+            setCloudStatus('saving');
+            clearTimeout(syncT);
+            syncT = setTimeout(pushCloud, 1200);
+        }
+
+        async function pushCloud() {
+            if (!sb || !user) return;
+            const { error } = await sb.from('tracker_data').upsert({
+                user_id: user.id, data: history, updated_at: new Date().toISOString()
+            });
+            setCloudStatus(error ? 'offline' : 'saved');
+        }
+
+        async function pullCloud() {
+            if (!sb || !user) return;
+            const { data, error } = await sb.from('tracker_data')
+                .select('data').eq('user_id', user.id).maybeSingle();
+            if (error) { setCloudStatus('offline'); return; }
+            const remote = (data && data.data) || {};
+            // Dispositivo actual gana en conflicto; nunca se pierden días de un solo lado.
+            history = { ...remote, ...history };
+            saveHistory();   // sube el resultado del merge
+            updateUI();
+        }
+
+        function setCloudStatus(state) {
+            const el = document.getElementById('cloud-status');
+            if (!el) return;
+            el.classList.toggle('saving', state === 'saving');
+            el.innerText = state === 'saving' ? '☁️ Guardando…'
+                         : state === 'offline' ? '⚠️ Sin conexión'
+                         : '☁️ Guardado';
+        }
+
+        function loginGoogle() {
+            if (!sb) { alert('Falta configurar Supabase en el código.'); return; }
+            sb.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: location.href.split('#')[0] }
+            });
+        }
+
+        function logout() {
+            if (sb) sb.auth.signOut(); // no borra localStorage: es la caché offline
+        }
+
+        // Pinta la barra según haya sesión o no.
+        function renderAuth() {
+            const login = document.getElementById('login-btn');
+            const box   = document.getElementById('user-box');
+            const backup = document.getElementById('backup-row');
+            if (!sb) { login.classList.add('hidden'); box.classList.add('hidden'); return; }
+            if (user) {
+                login.classList.add('hidden');
+                box.classList.remove('hidden');
+                document.getElementById('user-email').innerText = user.email || '';
+                backup.classList.add('hidden');   // con nube no hacen falta copias manuales
+            } else {
+                login.classList.remove('hidden');
+                box.classList.add('hidden');
+                backup.classList.remove('hidden');
+            }
+        }
+
+        function onAuth(session) {
+            user = session ? session.user : null;
+            renderAuth();
+            if (user) pullCloud();
+        }
+
+        async function resetToday() {
             if (!confirm('¿Borrar el registro de hoy y empezar de nuevo?')) return;
             delete history[today];
             localStorage.setItem('disciplineLog', JSON.stringify(history));
+            clearTimeout(syncT);
+            await pushCloud(); // sube el borrado ANTES de recargar (si no, pullCloud lo resucita)
             location.reload();
         }
 
@@ -499,22 +693,27 @@
         }
 
         function updateUI() {
-            const done = currentDay.exercise !== null && currentDay.food !== null;
+            const c = currentDay;
+            // El día está completo cuando hay comida y, si entrenó, también respondió cardio.
+            const done = c.food !== null && (c.exercise !== true || c.cardio !== null);
+            const ex = document.getElementById('q-exercise');
+            const ca = document.getElementById('q-cardio');
+            const fo = document.getElementById('q-food');
+            const fin = document.getElementById('finished');
+            ex.classList.add('hidden'); ca.classList.add('hidden');
+            fo.classList.add('hidden'); fin.classList.add('hidden');
             if (done) {
-                document.getElementById('q-exercise').classList.add('hidden');
-                document.getElementById('q-food').classList.add('hidden');
-                document.getElementById('finished').classList.remove('hidden');
+                fin.classList.remove('hidden');
                 document.getElementById('final-msg').innerText = finalMessage();
-            } else if (currentDay.exercise !== null) {
-                // Entrenó pero falta comida: salta directo a la pregunta de comida.
-                document.getElementById('q-exercise').classList.add('hidden');
-                document.getElementById('q-food').classList.remove('hidden');
-                document.getElementById('finished').classList.add('hidden');
-            } else {
+            } else if (c.exercise === null) {
                 // Sin registro hoy (p.ej. borrado desde el calendario): vuelve a la 1ª pregunta.
-                document.getElementById('q-exercise').classList.remove('hidden');
-                document.getElementById('q-food').classList.add('hidden');
-                document.getElementById('finished').classList.add('hidden');
+                ex.classList.remove('hidden');
+            } else if (c.exercise === true && c.cardio === null) {
+                // Entrenó pero falta cardio.
+                ca.classList.remove('hidden');
+            } else {
+                // Falta comida.
+                fo.classList.remove('hidden');
             }
             renderStats();
             renderGrid();
@@ -523,6 +722,7 @@
         // Mensaje al cerrar el día, según lo que hiciste.
         function finalMessage() {
             const d = currentDay;
+            if (d.exercise === true && d.cardio && d.food) return 'DÍA PERFECTO ✨🔥';
             if (d.exercise === true && d.food) return 'DÍA CONQUISTADO 🔥';
             if (d.exercise === 'rest' && d.food) return 'DESCANSO MERECIDO 🛌';
             if (d.exercise === true || d.exercise === 'rest' || d.food) return 'A MEDIAS. MAÑANA TODO.';
@@ -682,7 +882,8 @@
                 if (dayStr === today) dot.classList.add('today');
 
                 if (data) {
-                    if (data.exercise === true && data.food) dot.classList.add('perfect');
+                    if (data.exercise === true && data.cardio && data.food) dot.classList.add('legendary');
+                    else if (data.exercise === true && data.food) dot.classList.add('perfect');
                     else if (data.exercise === 'rest' && data.food) dot.classList.add('rest');
                     else if (data.exercise || data.food) dot.classList.add('half');
                     else dot.classList.add('failed');
@@ -729,7 +930,10 @@
             const fo = data.food === true  ? 'Comiste limpio 🥗'
                      : data.food === false ? 'Comiste basura 🍔'
                      :                       'Comida sin registrar';
-            return ex + '\n' + fo;
+            const ca = data.cardio === true  ? 'Cardio ✅ 🏃'
+                     : data.cardio === false ? 'Sin cardio'
+                     :                         null; // null: no se preguntó (descanso/no entreno)
+            return [ex, ca, fo].filter(Boolean).join('\n');
         }
 
         function openDayModal(key) {
@@ -755,16 +959,17 @@
         // Aplica un estado al día seleccionado en el modal.
         function setDay(state) {
             const map = {
-                perfect: { exercise: true,   food: true  },
-                rest:    { exercise: 'rest', food: true  },
-                failed:  { exercise: false,  food: false },
+                legendary: { exercise: true,   cardio: true,  food: true  },
+                perfect:   { exercise: true,   cardio: false, food: true  },
+                rest:      { exercise: 'rest', cardio: null,  food: true  },
+                failed:    { exercise: false,  cardio: null,  food: false },
             };
             if (state === 'clear') delete history[modalKey];
             else history[modalKey] = map[state];
-            localStorage.setItem('disciplineLog', JSON.stringify(history));
+            saveHistory();
 
             // Si edité HOY, sincroniza el flujo de preguntas.
-            if (modalKey === today) currentDay = history[today] || { exercise: null, food: null };
+            if (modalKey === today) currentDay = history[today] || { exercise: null, cardio: null, food: null };
             if (navigator.vibrate) navigator.vibrate(30);
             closeDayModal();
             updateUI();
@@ -790,8 +995,8 @@
                     const data = JSON.parse(reader.result);
                     if (typeof data !== 'object' || data === null || Array.isArray(data)) throw 0;
                     Object.assign(history, data);
-                    localStorage.setItem('disciplineLog', JSON.stringify(history));
-                    currentDay = history[today] || { exercise: null, food: null };
+                    saveHistory();
+                    currentDay = history[today] || { exercise: null, cardio: null, food: null };
                     updateUI();
                     alert('Datos importados ✓');
                 } catch (e) {
@@ -801,6 +1006,93 @@
             };
             reader.readAsText(file);
         }
+
+        // ---- Estadísticas por periodo ----
+        // Cuenta métricas sobre los días con registro entre fromKey y toKey (inclusive).
+        // Las claves YYYY-MM-DD se comparan como string (orden lexicográfico == cronológico).
+        function computeStats(data, fromKey, toKey) {
+            const s = { dias: 0, comidas: 0, cardios: 0, entrenos: 0, entrenosPerfectos: 0, diasPerfectos: 0 };
+            for (const k in data) {
+                if (k < fromKey || k > toKey) continue;
+                const d = data[k];
+                if (!d) continue;
+                s.dias++;
+                if (d.food === true) s.comidas++;
+                if (d.cardio === true) s.cardios++;
+                if (d.exercise === true) s.entrenos++;
+                if (d.exercise === true && d.cardio === true) s.entrenosPerfectos++;
+                if (d.exercise === true && d.cardio && d.food) s.diasPerfectos++;
+            }
+            return s;
+        }
+
+        function openStats() {
+            document.getElementById('stats-report').innerHTML = '';
+            document.getElementById('stats-modal').classList.remove('hidden');
+            statsPreset('month'); // resumen por defecto
+        }
+        function closeStats() {
+            document.getElementById('stats-modal').classList.add('hidden');
+        }
+
+        function statsPreset(kind) {
+            const to = new Date();
+            const from = new Date();
+            if (kind === 'week') from.setDate(to.getDate() - 6);
+            else if (kind === 'fortnight') from.setDate(to.getDate() - 14);
+            else from.setDate(1); // mes: desde el día 1 del mes actual
+            const fromKey = localKey(from), toKey = localKey(to);
+            document.getElementById('stats-from').value = fromKey;
+            document.getElementById('stats-to').value = toKey;
+            renderStatsReport(fromKey, toKey);
+        }
+
+        function statsCustom() {
+            let fromKey = document.getElementById('stats-from').value;
+            let toKey = document.getElementById('stats-to').value;
+            if (!fromKey || !toKey) { alert('Elige las dos fechas'); return; }
+            if (fromKey > toKey) [fromKey, toKey] = [toKey, fromKey]; // por si las invierte
+            renderStatsReport(fromKey, toKey);
+        }
+
+        function renderStatsReport(fromKey, toKey) {
+            const s = computeStats(history, fromKey, toKey);
+            const fmt = k => { const [y, m, d] = k.split('-'); return `${d} ${MESES[+m - 1].slice(0, 3)}`; };
+            const base = s.dias || 1; // evita /0; con 0 días todo sale 0%
+            const c = getComputedStyle(document.documentElement);
+            const accent = c.getPropertyValue('--accent').trim();
+            const rest = c.getPropertyValue('--rest').trim();
+            const rows = [
+                ['Días registrados', s.dias, s.dias, accent],
+                ['Comiste limpio 🥗', s.comidas, base, accent],
+                ['Cardio 🏃', s.cardios, base, rest],
+                ['Entrenamientos 💪', s.entrenos, base, accent],
+                ['Entrenos perfectos (cardio+pesas)', s.entrenosPerfectos, base, rest],
+                ['Días perfectos ✨ (las 3)', s.diasPerfectos, base, '#FFD700'],
+            ];
+            let html = `<div class="stats-range-lbl">${fmt(fromKey)} → ${fmt(toKey)}</div>`;
+            for (const [label, num, max, color] of rows) {
+                const pct = Math.round(num / (max || 1) * 100);
+                html += `<div class="stat-line"><div class="stat-top"><span>${label}</span>` +
+                        `<b>${num}</b></div><div class="bar"><div style="width:${pct}%;background:${color}"></div></div></div>`;
+            }
+            document.getElementById('stats-report').innerHTML = html;
+        }
+
+        // ponytail: self-check del conteo (falla ruidoso en consola si rompo computeStats)
+        (function statsSelfCheck() {
+            const t = {
+                '2026-01-01': { exercise: true,   cardio: true,  food: true  }, // perfecto
+                '2026-01-02': { exercise: true,   cardio: false, food: true  }, // entreno+comida
+                '2026-01-03': { exercise: 'rest', cardio: null,  food: true  }, // descanso+comida
+                '2026-01-04': { exercise: false,  cardio: null,  food: false }, // fallado
+                '2025-12-31': { exercise: true,   cardio: true,  food: true  }, // fuera de rango
+            };
+            const r = computeStats(t, '2026-01-01', '2026-01-04');
+            console.assert(r.dias === 4 && r.comidas === 3 && r.cardios === 1 &&
+                r.entrenos === 2 && r.entrenosPerfectos === 1 && r.diasPerfectos === 1,
+                'computeStats roto', r);
+        })();
 
         // Genera una imagen 1080x1080 de la racha y la comparte (o descarga).
         async function shareStreak() {
@@ -952,6 +1244,14 @@
         refreshNotifBtn();
         updateUI();
         maybeNotify();
+
+        // Sesión: pinta la barra y, si ya hay sesión (o vuelve del login Google),
+        // baja los datos de la nube. onAuthStateChange cubre el retorno del OAuth.
+        renderAuth();
+        if (sb) {
+            sb.auth.getSession().then(({ data }) => onAuth(data.session));
+            sb.auth.onAuthStateChange((_e, session) => onAuth(session));
+        }
 
         // Registra el service worker (necesario para instalar como app / offline).
         if ('serviceWorker' in navigator) {
