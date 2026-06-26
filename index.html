@@ -12,7 +12,10 @@
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <!-- Aplica el tema guardado antes de pintar para evitar parpadeo. -->
+    <script>const _t = localStorage.getItem('theme'); if (_t) document.documentElement.dataset.theme = _t;</script>
     <style>
+        /* Tema MATRIX (por defecto) */
         :root {
             --bg: #000000;
             --accent: #00FF41;
@@ -20,13 +23,52 @@
             --warning: #FFD700;
             --rest: #00D0FF;
             --card: #0a0a0a;
+            --text: #ffffff;
+            --text-dim: #888888;
+            --text-faint: #555555;
+            --border: #1a1a1a;
+            --surface: #111111;
+            --badge: #222222;
+        }
+
+        /* Tema ARENA (claro, beige/café tipo Claude) */
+        [data-theme="arena"] {
+            --bg: #f4ede2;
+            --accent: #c96442;
+            --fail: #b54034;
+            --warning: #b8860b;
+            --rest: #5b8aa6;
+            --card: #fbf7f0;
+            --text: #2b2622;
+            --text-dim: #6b6258;
+            --text-faint: #9b9183;
+            --border: #e5dccb;
+            --surface: #ece3d4;
+            --badge: #e5dccb;
+        }
+
+        /* Tema ACERO (gris/negro/blanco mono) */
+        [data-theme="acero"] {
+            --bg: #0c0c0c;
+            --accent: #f5f5f5;
+            --fail: #ff5d5d;
+            --warning: #bdbdbd;
+            --rest: #7fb0c4;
+            --card: #151515;
+            --text: #f0f0f0;
+            --text-dim: #9a9a9a;
+            --text-faint: #5a5a5a;
+            --border: #262626;
+            --surface: #1b1b1b;
+            --badge: #242424;
         }
 
         * { -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg);
-            color: white;
+            color: var(--text);
+            transition: background-color .3s, color .3s;
             font-family: 'Inter', sans-serif;
             margin: 0;
             display: flex;
@@ -49,15 +91,15 @@
             font-family: 'Bebas Neue';
             line-height: 0.8;
             color: var(--accent);
-            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            text-shadow: 0 0 22px var(--accent);
         }
-        .streak-label { font-size: 1rem; letter-spacing: 3px; color: #555; margin-bottom: 12px; }
-        .record-label { font-size: 0.75rem; letter-spacing: 2px; color: #444; margin-top: 8px; }
+        .streak-label { font-size: 1rem; letter-spacing: 3px; color: var(--text-faint); margin-bottom: 12px; }
+        .record-label { font-size: 0.75rem; letter-spacing: 2px; color: var(--text-faint); margin-top: 8px; }
         .record-label b { color: var(--warning); }
 
         /* Rango */
         .rank-badge {
-            background: #222;
+            background: var(--badge);
             padding: 5px 15px;
             border-radius: 50px;
             font-size: 0.8rem;
@@ -75,7 +117,7 @@
 
         .question-box {
             background: var(--card);
-            border: 2px solid #1a1a1a;
+            border: 2px solid var(--border);
             padding: 30px;
             border-radius: 24px;
             text-align: center;
@@ -105,10 +147,10 @@
             color: black; 
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
         }
-        .btn-no { 
-            background: #111; 
-            color: #444; 
-            border: 1px solid #222;
+        .btn-no {
+            background: var(--surface);
+            color: var(--text-faint);
+            border: 1px solid var(--border);
         }
         .btn-no:active { background: var(--fail); color: white; }
         .btn-rest {
@@ -134,11 +176,11 @@
             font-family: 'Bebas Neue';
             font-size: 1.6rem;
             letter-spacing: 2px;
-            color: #ddd;
+            color: var(--text);
         }
         .cal-nav {
-            background: #111;
-            border: 1px solid #222;
+            background: var(--surface);
+            border: 1px solid var(--border);
             color: var(--accent);
             width: 40px;
             height: 40px;
@@ -149,7 +191,7 @@
             align-items: center;
             justify-content: center;
         }
-        .cal-nav:active { background: #1a1a1a; transform: scale(0.94); }
+        .cal-nav:active { background: var(--border); transform: scale(0.94); }
         .cal-nav:disabled { opacity: 0.25; cursor: default; }
         .cal-weekdays, .history-grid {
             display: grid;
@@ -161,33 +203,38 @@
             text-align: center;
             font-size: 0.65rem;
             letter-spacing: 1px;
-            color: #444;
+            color: var(--text-faint);
             padding-bottom: 6px;
         }
         .history-grid { margin-top: 0; }
 
         .day-dot {
             aspect-ratio: 1;
-            background: #111;
+            background: var(--surface);
             border-radius: 6px;
             font-size: 0.6rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #333;
+            color: var(--text-faint);
         }
         .day-dot.empty { background: transparent; }
-        .day-dot.today { outline: 2px solid #fff; outline-offset: -2px; }
+        .day-dot.today { outline: 2px solid var(--text); outline-offset: -2px; }
         .day-dot.perfect { background: var(--accent); color: black; box-shadow: 0 0 10px var(--accent); }
         .day-dot.rest { background: var(--rest); color: black; box-shadow: 0 0 10px var(--rest); }
         .day-dot.half { border: 2px solid var(--warning); color: var(--warning); }
-        .day-dot.failed { border: 1px solid #333; color: #555; }
+        .day-dot.failed {
+            background: #2a0000;
+            border: 2px solid var(--fail);
+            color: var(--fail);
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+        }
 
         .reset-btn {
             margin-top: 20px;
             background: none;
             border: none;
-            color: #333;
+            color: var(--text-faint);
             text-decoration: underline;
             cursor: pointer;
             font-size: 0.8rem;
@@ -195,15 +242,15 @@
 
         /* Barra de progreso al siguiente rango */
         .rank-progress { width: 100%; max-width: 220px; margin: 12px auto 0; }
-        .rank-bar { height: 6px; background: #1a1a1a; border-radius: 50px; overflow: hidden; }
+        .rank-bar { height: 6px; background: var(--border); border-radius: 50px; overflow: hidden; }
         .rank-fill { height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 8px var(--accent); transition: width .4s; }
-        .rank-next { font-size: .6rem; letter-spacing: 1px; color: #555; margin-top: 6px; }
+        .rank-next { font-size: .6rem; letter-spacing: 1px; color: var(--text-faint); margin-top: 6px; }
 
         /* Estadísticas */
         .stats-row { display: flex; gap: 28px; justify-content: center; margin-top: 16px; }
         .stat { text-align: center; }
-        .stat-num { font-family: 'Bebas Neue'; font-size: 1.8rem; color: #ddd; line-height: 1; }
-        .stat-lbl { font-size: .55rem; letter-spacing: 1px; color: #444; margin-top: 4px; }
+        .stat-num { font-family: 'Bebas Neue'; font-size: 1.8rem; color: var(--text); line-height: 1; }
+        .stat-lbl { font-size: .55rem; letter-spacing: 1px; color: var(--text-faint); margin-top: 4px; }
 
         /* Presumir */
         .share-btn {
@@ -218,15 +265,87 @@
         /* Backup de datos */
         .data-row { display: flex; gap: 24px; justify-content: center; margin-top: 28px; }
         .data-btn {
-            background: none; border: none; color: #444; text-decoration: underline;
+            background: none; border: none; color: var(--text-faint); text-decoration: underline;
             cursor: pointer; font-size: .75rem; letter-spacing: .5px;
         }
         .data-btn:active { color: var(--accent); }
 
         .hidden { display: none; }
+
+        /* Modal de día (ver / modificar) */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal-box {
+            background: var(--card); border: 2px solid var(--border);
+            border-radius: 24px; padding: 28px; width: 100%; max-width: 360px;
+            text-align: center;
+        }
+        .modal-date {
+            font-family: 'Bebas Neue'; font-size: 1.8rem; letter-spacing: 2px; color: var(--text);
+        }
+        .modal-status {
+            font-size: 0.95rem; color: var(--text-dim); margin: 12px 0 20px;
+            line-height: 1.6; white-space: pre-line;
+        }
+        .modal-box .btn { padding: 18px; font-size: 1.1rem; }
+
+        /* #1 Banner racha en peligro */
+        .danger-banner {
+            width: 100%; max-width: 450px; margin: 14px auto 0;
+            background: #2a0000; border: 1px solid var(--fail);
+            color: var(--fail); border-radius: 14px;
+            padding: 12px 16px; text-align: center;
+            font-size: .85rem; font-weight: 900; letter-spacing: .5px;
+            box-shadow: 0 0 14px rgba(255, 0, 0, 0.35);
+            animation: pulseDanger 1.6s ease-in-out infinite;
+        }
+        @keyframes pulseDanger {
+            0%, 100% { box-shadow: 0 0 14px rgba(255, 0, 0, 0.35); }
+            50%      { box-shadow: 0 0 22px rgba(255, 0, 0, 0.6); }
+        }
+
+        /* #2 Frase diaria */
+        .daily-quote {
+            max-width: 450px; margin: 18px auto 0; text-align: center;
+            font-family: 'Bebas Neue'; font-size: 1.25rem; letter-spacing: 1px;
+            color: var(--text-dim); line-height: 1.3; padding: 0 10px;
+        }
+
+        /* #4 Proximidad al récord */
+        .record-proximity { font-size: .7rem; letter-spacing: 1px; color: var(--warning); margin-top: 6px; min-height: 1em; }
+
+        /* #5 Overlay de hito */
+        .milestone-num {
+            font-family: 'Bebas Neue'; font-size: 7rem; line-height: .8;
+            color: var(--accent); text-shadow: 0 0 30px var(--accent);
+        }
+        .milestone-msg { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 2px; color: var(--text); margin-top: 10px; }
+
+        /* Selector de tema */
+        .theme-row { display: flex; gap: 14px; justify-content: center; margin-top: 26px; }
+        .theme-btn {
+            width: 36px; height: 36px; border-radius: 50%; padding: 0;
+            border: 2px solid var(--border); cursor: pointer; transition: transform .15s;
+        }
+        .theme-btn.active { border-color: var(--accent); transform: scale(1.15); }
+
+        /* #6 Progreso del mes */
+        .month-progress { width: 100%; max-width: 450px; margin: 0 auto 14px; }
+        .month-bar { height: 8px; background: var(--border); border-radius: 50px; overflow: hidden; }
+        .month-fill { height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 8px var(--accent); transition: width .4s; }
+        .month-lbl { font-size: .6rem; letter-spacing: 1px; color: var(--text-faint); margin-top: 6px; text-align: center; }
+
+        .notif-btn { margin-top: 10px; }
     </style>
 </head>
 <body>
+
+    <div id="danger-banner" class="danger-banner hidden"></div>
 
     <div class="streak-container">
         <div class="streak-label">RACHA ACTUAL</div>
@@ -237,12 +356,15 @@
             <div class="rank-next" id="rank-next"></div>
         </div>
         <div class="record-label">RÉCORD: <b id="record-count">0</b> DÍAS</div>
+        <div class="record-proximity" id="record-proximity"></div>
         <div class="stats-row">
             <div class="stat"><div class="stat-num" id="stat-good">0</div><div class="stat-lbl">DÍAS CUMPLIDOS</div></div>
             <div class="stat"><div class="stat-num" id="stat-rate">0%</div><div class="stat-lbl">CONSTANCIA</div></div>
         </div>
         <button class="share-btn" onclick="shareStreak()">PRESUMIR 🔥</button>
     </div>
+
+    <div class="daily-quote" id="daily-quote"></div>
 
     <div class="main-container">
         <div id="q-exercise" class="question-box">
@@ -273,14 +395,55 @@
         <div class="cal-weekdays">
             <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
         </div>
+        <div class="month-progress">
+            <div class="month-bar"><div class="month-fill" id="month-fill"></div></div>
+            <div class="month-lbl" id="month-lbl"></div>
+        </div>
         <div class="history-grid" id="history-grid"></div>
         <button class="reset-btn hidden" id="cal-today" onclick="goToday()" style="display:none">↩ VOLVER A HOY</button>
+    </div>
+
+    <div id="milestone-modal" class="modal-overlay hidden" onclick="closeMilestone()">
+        <div class="modal-box">
+            <div class="milestone-num" id="milestone-num"></div>
+            <div class="milestone-msg" id="milestone-msg"></div>
+            <button class="btn btn-yes" style="margin-top:24px" onclick="closeMilestone()">SIGO 🔥</button>
+        </div>
+    </div>
+
+    <div id="day-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeDayModal()">
+        <div class="modal-box">
+            <div class="modal-date" id="modal-date"></div>
+            <div class="modal-status" id="modal-status"></div>
+            <div id="modal-view">
+                <button class="btn btn-yes" onclick="openEdit()">MODIFICAR ✏️</button>
+                <button class="btn btn-no" onclick="closeDayModal()">SOLO VER, CERRAR</button>
+            </div>
+            <div id="modal-edit" class="hidden">
+                <button class="btn btn-yes" onclick="setDay('perfect')">DÍA PERFECTO 💪</button>
+                <button class="btn btn-rest" onclick="setDay('rest')">DESCANSO 🛌</button>
+                <button class="btn btn-no" onclick="setDay('failed')">DÍA FALLADO ❌</button>
+                <button class="reset-btn" onclick="setDay('clear')">Borrar este día</button>
+            </div>
+        </div>
     </div>
 
     <div class="data-row">
         <button class="data-btn" onclick="exportData()">⬇ EXPORTAR COPIA</button>
         <button class="data-btn" onclick="document.getElementById('import-file').click()">⬆ IMPORTAR</button>
         <input type="file" id="import-file" accept="application/json,.json" class="hidden" onchange="importData(this)">
+    </div>
+    <div class="theme-row">
+        <button class="theme-btn" data-theme-val="matrix" title="Matrix"
+                style="background:linear-gradient(135deg,#000 50%,#00FF41 50%)" onclick="setTheme('matrix')"></button>
+        <button class="theme-btn" data-theme-val="arena" title="Arena"
+                style="background:linear-gradient(135deg,#f4ede2 50%,#c96442 50%)" onclick="setTheme('arena')"></button>
+        <button class="theme-btn" data-theme-val="acero" title="Acero"
+                style="background:linear-gradient(135deg,#0c0c0c 50%,#f5f5f5 50%)" onclick="setTheme('acero')"></button>
+    </div>
+
+    <div class="data-row notif-btn">
+        <button class="data-btn" id="notif-btn" onclick="enableReminders()">🔔 ACTIVAR RECORDATORIO</button>
     </div>
 
     <script>
@@ -436,6 +599,11 @@
             document.getElementById('streak-count').innerText = streak;
             document.getElementById('record-count').innerText = best;
 
+            // Motivación: banner de peligro, proximidad al récord, hito alcanzado.
+            updateDanger(streak, t, todayComplete);
+            updateRecordProximity(streak, best);
+            checkMilestone(streak);
+
             // Rango + barra de progreso al siguiente
             const { current, next } = rankInfo(streak);
             document.getElementById('rank-name').innerText = current.name;
@@ -520,39 +688,85 @@
                     else dot.classList.add('failed');
                 }
 
-                // Días de hoy o pasados: tap para corregir su estado. Futuro no.
+                // Días de hoy o pasados: tap abre modal (ver / modificar). Futuro no.
                 if (d <= new Date()) {
                     dot.classList.add('editable');
-                    dot.onclick = () => cycleDay(dayStr);
+                    dot.onclick = () => openDayModal(dayStr);
                 }
                 grid.appendChild(dot);
             }
+
+            updateMonthProgress(year, month, daysInMonth);
         }
 
-        // Tap en un día del calendario: cicla su estado.
-        // vacío → perfecto → descanso → fallado → vacío.
-        function cycleDay(key) {
-            const states = [
-                null,
-                { exercise: true,   food: true  }, // perfecto
-                { exercise: 'rest', food: true  }, // descanso
-                { exercise: false,  food: false }, // fallado
-            ];
-            const cur = history[key];
-            let idx = 0;
-            if (cur) {
-                if (cur.exercise === true && cur.food) idx = 1;
-                else if (cur.exercise === 'rest' && cur.food) idx = 2;
-                else idx = 3; // fallado o a medias caen en el slot "fallado"
+        // #6 Progreso del mes: % de días cumplidos sobre días transcurridos.
+        function updateMonthProgress(year, month, daysInMonth) {
+            const now = new Date();
+            let elapsed = daysInMonth;
+            if (year === now.getFullYear() && month === now.getMonth()) elapsed = now.getDate();
+            else if (year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth())) elapsed = 0;
+
+            let good = 0;
+            for (let day = 1; day <= elapsed; day++) {
+                if (isGood(history[localKey(new Date(year, month, day))])) good++;
             }
-            const nextState = states[(idx + 1) % states.length];
-            if (nextState === null) delete history[key];
-            else history[key] = nextState;
+            const pct = elapsed ? Math.round(good / elapsed * 100) : 0;
+            document.getElementById('month-fill').style.width = pct + '%';
+            document.getElementById('month-lbl').innerText =
+                elapsed ? `ESTE MES: ${good}/${elapsed} DÍAS · ${pct}%` : 'MES FUTURO';
+        }
+
+        // Tap en un día del calendario: abre modal para VER o MODIFICAR.
+        let modalKey = null;
+
+        // Resume en texto qué se hizo ese día.
+        function statusText(data) {
+            if (!data || (data.exercise === null && data.food === null)) return 'Sin registro este día.';
+            const ex = data.exercise === true   ? 'Entrenaste 💪'
+                     : data.exercise === 'rest' ? 'Día de descanso 🛌'
+                     : data.exercise === false  ? 'No entrenaste ❌'
+                     :                            'Entreno sin registrar';
+            const fo = data.food === true  ? 'Comiste limpio 🥗'
+                     : data.food === false ? 'Comiste basura 🍔'
+                     :                       'Comida sin registrar';
+            return ex + '\n' + fo;
+        }
+
+        function openDayModal(key) {
+            modalKey = key;
+            const [y, m, dd] = key.split('-');
+            document.getElementById('modal-date').innerText = `${dd} ${MESES[+m - 1]} ${y}`;
+            document.getElementById('modal-status').innerText = statusText(history[key]);
+            document.getElementById('modal-view').classList.remove('hidden');
+            document.getElementById('modal-edit').classList.add('hidden');
+            document.getElementById('day-modal').classList.remove('hidden');
+        }
+
+        function openEdit() {
+            document.getElementById('modal-view').classList.add('hidden');
+            document.getElementById('modal-edit').classList.remove('hidden');
+        }
+
+        function closeDayModal() {
+            document.getElementById('day-modal').classList.add('hidden');
+            modalKey = null;
+        }
+
+        // Aplica un estado al día seleccionado en el modal.
+        function setDay(state) {
+            const map = {
+                perfect: { exercise: true,   food: true  },
+                rest:    { exercise: 'rest', food: true  },
+                failed:  { exercise: false,  food: false },
+            };
+            if (state === 'clear') delete history[modalKey];
+            else history[modalKey] = map[state];
             localStorage.setItem('disciplineLog', JSON.stringify(history));
 
             // Si edité HOY, sincroniza el flujo de preguntas.
-            if (key === today) currentDay = history[today] || { exercise: null, food: null };
+            if (modalKey === today) currentDay = history[today] || { exercise: null, food: null };
             if (navigator.vibrate) navigator.vibrate(30);
+            closeDayModal();
             updateUI();
         }
 
@@ -594,27 +808,34 @@
             const rank   = document.getElementById('rank-name').innerText;
             const record = document.getElementById('record-count').innerText;
 
+            // Colores del tema activo, para que la imagen compartida combine.
+            const css = getComputedStyle(document.documentElement);
+            const BG = css.getPropertyValue('--bg').trim() || '#000';
+            const ACC = css.getPropertyValue('--accent').trim() || '#00FF41';
+            const DIM = css.getPropertyValue('--text-dim').trim() || '#666';
+            const FAINT = css.getPropertyValue('--text-faint').trim() || '#555';
+
             await document.fonts.ready; // asegura que las fuentes estén listas antes de pintar
             const c = document.createElement('canvas');
             c.width = c.height = 1080;
             const x = c.getContext('2d');
-            x.fillStyle = '#000'; x.fillRect(0, 0, 1080, 1080);
+            x.fillStyle = BG; x.fillRect(0, 0, 1080, 1080);
             x.textAlign = 'center';
 
-            x.fillStyle = '#666'; x.font = '40px Inter, sans-serif';
+            x.fillStyle = DIM; x.font = '40px Inter, sans-serif';
             x.fillText('RACHA ACTUAL', 540, 300);
 
-            x.fillStyle = '#00FF41';
-            x.shadowColor = '#00FF41'; x.shadowBlur = 70;
+            x.fillStyle = ACC;
+            x.shadowColor = ACC; x.shadowBlur = 70;
             x.font = '900 400px Inter, sans-serif';
             x.fillText(streak, 540, 640);
             x.shadowBlur = 0;
 
-            x.fillStyle = '#00FF41'; x.font = '700 70px Inter, sans-serif';
+            x.fillStyle = ACC; x.font = '700 70px Inter, sans-serif';
             x.fillText(rank, 540, 770);
-            x.fillStyle = '#555'; x.font = '36px Inter, sans-serif';
+            x.fillStyle = FAINT; x.font = '36px Inter, sans-serif';
             x.fillText('RÉCORD: ' + record + ' DÍAS', 540, 840);
-            x.fillStyle = '#222'; x.font = '900 46px Inter, sans-serif';
+            x.fillStyle = FAINT; x.font = '900 46px Inter, sans-serif';
             x.fillText('SISTEMA DE DISCIPLINA', 540, 1010);
 
             c.toBlob(async (blob) => {
@@ -631,7 +852,106 @@
             }, 'image/png');
         }
 
+        // ===== MOTIVACIÓN =====
+
+        // #1 Banner racha en peligro: hoy sin cerrar bien, racha viva, y ya es tarde.
+        function updateDanger(streak, t, todayComplete) {
+            const banner = document.getElementById('danger-banner');
+            const late = new Date().getHours() >= 15;
+            const enRiesgo = streak >= 1 && !isGood(t) && !todayComplete && late;
+            if (enRiesgo) {
+                banner.innerText = `⚠️ TU RACHA DE ${streak} DÍAS MUERE A MEDIANOCHE. CIERRA EL DÍA.`;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        // #4 Proximidad al récord.
+        function updateRecordProximity(streak, best) {
+            const el = document.getElementById('record-proximity');
+            if (streak > 0 && streak >= best) el.innerText = '🏆 ¡ESTÁS EN TU RÉCORD! NO PARES';
+            else if (streak > 0 && best - streak <= 3) el.innerText = `🔥 A ${best - streak} DE TU RÉCORD`;
+            else el.innerText = '';
+        }
+
+        // #2 Frase diaria: misma frase todo el día, rota por fecha.
+        const QUOTES = [
+            'EL DOLOR ES TEMPORAL. RENDIRSE ES PARA SIEMPRE.',
+            'NADIE VIENE A SALVARTE. LEVÁNTATE.',
+            'DISCIPLINA ES HACER LO QUE ODIAS COMO SI LO AMARAS.',
+            'NO CUENTES LOS DÍAS. HAZ QUE LOS DÍAS CUENTEN.',
+            'TU ÚNICA COMPETENCIA ES QUIEN FUISTE AYER.',
+            'LAS EXCUSAS NO QUEMAN CALORÍAS.',
+            'SUDA AHORA. BRILLA DESPUÉS.',
+            'EL CUERPO LOGRA LO QUE LA MENTE CREE.',
+            'CADA REP TE ACERCA. CADA EXCUSA TE ALEJA.',
+            'NO ESTÁS CANSADO. ESTÁS DÉBIL DE MENTE.',
+            'HAZLO POR EL QUE QUIERES SER, NO POR EL QUE ERES.',
+            'LA MOTIVACIÓN TE ARRANCA. EL HÁBITO TE MANTIENE.',
+            'GANAR DUELE MENOS QUE ARREPENTIRSE.',
+            'SI FUERA FÁCIL, LO HARÍA CUALQUIERA.',
+        ];
+        function setDailyQuote() {
+            const day = Math.floor(new Date(today).getTime() / 86400000);
+            document.getElementById('daily-quote').innerText = QUOTES[day % QUOTES.length];
+        }
+
+        // #5 Hitos: celebra al cruzar un umbral por primera vez.
+        const MILESTONES = [7, 14, 30, 50, 75, 100];
+        function checkMilestone(streak) {
+            let celebrated = JSON.parse(localStorage.getItem('celebrated') || '[]');
+            const hit = MILESTONES.find(m => streak >= m && !celebrated.includes(m));
+            if (hit === undefined) return;
+            celebrated.push(hit);
+            localStorage.setItem('celebrated', JSON.stringify(celebrated));
+            document.getElementById('milestone-num').innerText = hit;
+            document.getElementById('milestone-msg').innerText = `¡${hit} DÍAS SEGUIDOS!`;
+            document.getElementById('milestone-modal').classList.remove('hidden');
+            if (navigator.vibrate) navigator.vibrate([80, 40, 120]);
+            flashDone();
+        }
+        function closeMilestone() {
+            document.getElementById('milestone-modal').classList.add('hidden');
+        }
+
+        // #3 Recordatorio. ponytail: solo dispara una notificación al abrir la app
+        // si hoy sigue sin cerrarse. Un push diario real necesita servidor; YAGNI por ahora.
+        function refreshNotifBtn() {
+            const btn = document.getElementById('notif-btn');
+            if (!('Notification' in window)) { btn.style.display = 'none'; return; }
+            if (Notification.permission === 'granted') btn.innerText = '🔔 RECORDATORIO ACTIVO';
+            else if (Notification.permission === 'denied') btn.innerText = '🔕 RECORDATORIO BLOQUEADO';
+            else btn.innerText = '🔔 ACTIVAR RECORDATORIO';
+        }
+        function enableReminders() {
+            if (!('Notification' in window)) return;
+            Notification.requestPermission().then(() => { refreshNotifBtn(); maybeNotify(); });
+        }
+        function maybeNotify() {
+            if (Notification.permission !== 'granted') return;
+            const t = history[today];
+            const done = t && t.exercise !== null && t.food !== null;
+            if (done) return;
+            // Una sola vez al día.
+            if (localStorage.getItem('lastNotify') === today) return;
+            localStorage.setItem('lastNotify', today);
+            new Notification('SISTEMA DE DISCIPLINA', { body: '¿Entrenaste hoy? Cierra el día 💪', icon: 'icon-192.png' });
+        }
+
+        // Tema: aplica el guardado y marca el botón activo.
+        function setTheme(t) {
+            document.documentElement.dataset.theme = t;
+            localStorage.setItem('theme', t);
+            document.querySelectorAll('.theme-btn').forEach(b =>
+                b.classList.toggle('active', b.dataset.themeVal === t));
+        }
+        setTheme(localStorage.getItem('theme') || 'matrix');
+
+        setDailyQuote();
+        refreshNotifBtn();
         updateUI();
+        maybeNotify();
 
         // Registra el service worker (necesario para instalar como app / offline).
         if ('serviceWorker' in navigator) {
