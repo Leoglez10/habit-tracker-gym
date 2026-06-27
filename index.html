@@ -479,16 +479,16 @@
         }
         .av-fallback { background: hsl(var(--hue), 52%, 42%); }
         .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-        .av-lg { width: 86px; height: 86px; font-size: 1.7rem; }
-        .av-md { width: 64px; height: 64px; font-size: 1.3rem; }
+        .av-lg { width: clamp(58px, 19vw, 86px); height: clamp(58px, 19vw, 86px); font-size: clamp(1.2rem, 5vw, 1.7rem); }
+        .av-md { width: clamp(46px, 15vw, 64px); height: clamp(46px, 15vw, 64px); font-size: clamp(1rem, 4vw, 1.3rem); }
         .av-sm { width: 38px; height: 38px; font-size: .85rem; }
 
         /* Podio top-3 */
-        .podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 18px; }
+        .podium { display: flex; align-items: flex-end; justify-content: center; gap: 6px; margin-bottom: 18px; }
         .podium-col {
-            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 14px 14px 0 0; padding: 12px 6px 0; min-width: 0;
+            border-radius: 14px 14px 0 0; padding: 12px 4px 0; min-width: 0;
         }
         .podium-col.empty { background: transparent; border: none; }
         .podium-col.p1 { padding-top: 18px; border-color: var(--warning); box-shadow: 0 0 16px rgba(255,215,0,.18); }
@@ -527,6 +527,26 @@
         }
         .lb-streak { font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--accent); }
 
+        /* Grupos fijados en la pantalla principal (pueden ser varios, apilados) */
+        .pinned-group {
+            width: 100%; max-width: 450px; margin: 28px auto 0;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .pinned-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 18px;
+        }
+        .pinned-bar {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+        }
+        .pinned-tag { font-size: .65rem; letter-spacing: 1.5px; color: var(--text-faint); font-weight: 800; }
+        .pinned-actions { display: flex; gap: 14px; }
+        .pinned-link {
+            background: none; border: none; color: var(--accent);
+            font-size: .68rem; font-weight: 800; letter-spacing: 1px; cursor: pointer; padding: 0;
+        }
+        .pinned-link:active { opacity: .6; }
+
         /* Toast */
         .toast {
             position: fixed; left: 50%; bottom: 40px; transform: translate(-50%, 20px);
@@ -535,6 +555,19 @@
             opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none;
         }
         .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* Móviles angostos: aprieta modal, podio y tarjetas fijadas */
+        @media (max-width: 400px) {
+            .modal-box { padding: 20px 16px; }
+            .pinned-card { padding: 14px; }
+            .podium { gap: 4px; }
+            .podium-col { padding: 10px 3px 0; }
+            .podium-name { font-size: .72rem; }
+            .podium-streak { font-size: 1.3rem; }
+            .lb-group { font-size: 1.5rem; }
+            .lb-row { padding: 7px 9px; gap: 8px; }
+            .chip { font-size: .54rem; padding: 2px 6px; }
+        }
     </style>
 </head>
 <body>
@@ -602,6 +635,8 @@
         <div class="history-grid" id="history-grid"></div>
         <button class="reset-btn hidden" id="cal-today" onclick="goToday()" style="display:none">↩ VOLVER A HOY</button>
     </div>
+
+    <div id="pinned-group" class="pinned-group hidden"></div>
 
     <div id="milestone-modal" class="modal-overlay hidden" onclick="closeMilestone()">
         <div class="modal-box">
@@ -855,6 +890,7 @@
             renderAuth();
             if (user) pullCloud();
             processPendingJoin(); // une al grupo si se entró por un link ?join=
+            renderPinned();       // pinta el grupo fijado en el inicio
         }
 
         async function resetToday() {
@@ -1464,20 +1500,12 @@
                    `${escHtml(initials(m.display_name))}${img}</div>`;
         }
 
-        async function openLeaderboard(i) {
-            const g = myGroups[i];
-            const body = document.getElementById('groups-body');
-            body.innerHTML = '<div class="modal-status">Cargando…</div>';
-            const { data, error } = await sb.rpc('group_leaderboard', { p_group_id: g.id });
-            if (error) { body.innerHTML = '<div class="modal-status">No se pudo cargar la tabla.</div>'; return; }
-            const rows = data || [];
-
-            // Cabecera: nombre + código copiable.
+        // Construye la tabla (cabecera + podio + lista). Reusado por el modal y la sección fijada.
+        function boardBody(g, rows) {
             let html = `<div class="lb-head">
                 <div class="lb-group">${escHtml(g.name)}</div>
                 <button class="code-pill" onclick="copyCode('${g.code}')">CÓDIGO <b>${escHtml(g.code)}</b> 📋</button>
               </div>`;
-
             // Podio top-3 (orden visual: 2º · 1º · 3º).
             const podiumCol = (m, rank) => {
                 if (!m) return '<div class="podium-col empty"></div>';
@@ -1492,7 +1520,6 @@
                   </div>`;
             };
             html += `<div class="podium">${podiumCol(rows[1], 2)}${podiumCol(rows[0], 1)}${podiumCol(rows[2], 3)}</div>`;
-
             // Resto (4º en adelante) en lista con avatar y chips de stats.
             const rest = rows.slice(3);
             if (rest.length) {
@@ -1509,7 +1536,19 @@
                 });
                 html += '</div>';
             }
+            return html;
+        }
 
+        async function openLeaderboard(i) {
+            const g = myGroups[i];
+            const body = document.getElementById('groups-body');
+            body.innerHTML = '<div class="modal-status">Cargando…</div>';
+            const { data, error } = await sb.rpc('group_leaderboard', { p_group_id: g.id });
+            if (error) { body.innerHTML = '<div class="modal-status">No se pudo cargar la tabla.</div>'; return; }
+            let html = boardBody(g, data || []);
+
+            const pinLbl = isPinned(g.id) ? '📌 FIJADO (tocar para quitar)' : '📌 FIJAR EN EL INICIO';
+            html += `<button class="btn-period" style="width:100%;margin-top:4px" onclick="pinGroup(${i})">${pinLbl}</button>`;
             const danger = g.is_owner
                 ? `<button class="btn-period" onclick="doDeleteGroup(${i})" style="border-color:var(--fail);color:var(--fail)">🗑️ ELIMINAR GRUPO</button>`
                 : `<button class="btn-period" onclick="doLeaveGroup(${i})" style="border-color:var(--fail);color:var(--fail)">SALIR</button>`;
@@ -1589,7 +1628,52 @@
         async function doDeleteGroup(i) {
             if (!confirm(`¿Eliminar el grupo "${myGroups[i].name}" para todos? No se puede deshacer.`)) return;
             await sb.rpc('delete_group', { p_group_id: myGroups[i].id });
+            if (isPinned(myGroups[i].id)) unpin(myGroups[i].id);
             renderGroupsList();
+        }
+
+        // --- Fijar grupos: sus tablas aparecen en la pantalla principal (por dispositivo) ---
+        function pinnedIds() {
+            try { return JSON.parse(localStorage.getItem('pinnedGroups') || '[]'); } catch { return []; }
+        }
+        function setPinned(ids) { localStorage.setItem('pinnedGroups', JSON.stringify(ids)); }
+        function isPinned(id) { return pinnedIds().includes(id); }
+        function unpin(id) {
+            setPinned(pinnedIds().filter(x => x !== id));
+            renderPinned();
+        }
+        function pinGroup(i) {
+            const id = myGroups[i].id;
+            if (isPinned(id)) { unpin(id); toast('Grupo desfijado'); }
+            else { setPinned([...pinnedIds(), id]); toast('Grupo fijado en el inicio 📌'); }
+            closeGroups();
+            renderPinned();
+        }
+        async function renderPinned() {
+            const sec = document.getElementById('pinned-group');
+            const ids = pinnedIds();
+            if (!sb || !user || !ids.length) { sec.classList.add('hidden'); sec.innerHTML = ''; return; }
+            const { data: groups } = await sb.rpc('my_groups');
+            const byId = new Map((groups || []).map(g => [g.id, g]));
+            // Limpia los que ya no existen (saliste / eliminados).
+            const valid = ids.filter(id => byId.has(id));
+            if (valid.length !== ids.length) setPinned(valid);
+            if (!valid.length) { sec.classList.add('hidden'); sec.innerHTML = ''; return; }
+            const cards = await Promise.all(valid.map(async id => {
+                const g = byId.get(id);
+                const { data: rows, error } = await sb.rpc('group_leaderboard', { p_group_id: id });
+                if (error) return '';
+                return `<div class="pinned-card">
+                    <div class="pinned-bar">
+                        <span class="pinned-tag">📌 ${escHtml(g.name)}</span>
+                        <span class="pinned-actions">
+                            <button class="pinned-link" onclick="openGroups()">ABRIR</button>
+                            <button class="pinned-link" onclick="unpin('${id}')">DESFIJAR</button>
+                        </span>
+                    </div>${boardBody(g, rows || [])}</div>`;
+            }));
+            sec.innerHTML = cards.join('');
+            sec.classList.toggle('hidden', !sec.innerHTML.trim());
         }
 
         // --- Deep-link: abrir con ?join=CODE une al grupo (tras login si hace falta) ---
