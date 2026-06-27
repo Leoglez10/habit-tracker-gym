@@ -1546,7 +1546,7 @@
                     <div class="podium-medal">${medal}</div>
                     ${avatarHtml(m, rank === 1 ? 'av-lg' : 'av-md')}
                     <div class="podium-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</div>
-                    <div class="podium-streak"><span class="num">${m.current_streak}</span><span class="flame">🔥</span></div>
+                    <div class="podium-streak"><span class="num">${m.current_streak}</span></div>
                     <div class="podium-sub">días en racha</div>
                     <div class="podium-stand">${rank}</div>
                   </div>`;
@@ -1564,7 +1564,7 @@
                             <div class="lb-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</div>
                             <div class="chips"><span class="chip">✨${m.perfect_days}</span><span class="chip">💪${m.entrenos}</span><span class="chip">🏃${m.cardios}</span><span class="chip">${m.rate}%</span></div>
                         </div>
-                        <span class="lb-streak"><span class="num">${m.current_streak}</span><span class="flame">🔥</span></span></div>`;
+                        <span class="lb-streak"><span class="num">${m.current_streak}</span></span></div>`;
                 });
                 html += '</div>';
             }
