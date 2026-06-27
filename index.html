@@ -67,6 +67,23 @@
             --badge: #242424;
         }
 
+        /* Tema SINTETIK (synthwave morado/magenta) */
+        [data-theme="sintetik"]{--bg:#0d0221;--accent:#ff2e97;--fail:#ff5d6c;--warning:#ffd700;--rest:#00e5ff;--cardio:#ff8c00;--card:#1a0b2e;--text:#f5e9ff;--text-dim:#a98fc4;--text-faint:#6b5a85;--border:#2a1145;--surface:#22103a;--badge:#2e1648;}
+        /* Tema OCEANO (navy + cyan) */
+        [data-theme="oceano"]{--bg:#0a1628;--accent:#22d3ee;--fail:#ff5d5d;--warning:#f5a623;--rest:#38bdf8;--cardio:#fb923c;--card:#0f2138;--text:#e6f1ff;--text-dim:#8aa6c4;--text-faint:#516a85;--border:#1c3350;--surface:#13283f;--badge:#1c3350;}
+        /* Tema SANGRE (negro + crimson) */
+        [data-theme="sangre"]{--bg:#0a0606;--accent:#e0243a;--fail:#ff6b6b;--warning:#f5a623;--rest:#6b9bd1;--cardio:#ff8c00;--card:#160c0c;--text:#f5e6e6;--text-dim:#b08a8a;--text-faint:#6e5252;--border:#2a1414;--surface:#1d0f0f;--badge:#2a1414;}
+        /* Tema SOLAR (claro + azul) */
+        [data-theme="solar"]{--bg:#f0f4f8;--accent:#2563eb;--fail:#dc2626;--warning:#d97706;--rest:#0891b2;--cardio:#ea580c;--card:#ffffff;--text:#0f172a;--text-dim:#64748b;--text-faint:#94a3b8;--border:#dbe3ec;--surface:#e6edf5;--badge:#dbe3ec;}
+        /* Tema MOCHA (cafe oscuro + tan) */
+        [data-theme="mocha"]{--bg:#1a1512;--accent:#c9a886;--fail:#d9755f;--warning:#d9a441;--rest:#8fa3b0;--cardio:#cc7a3d;--card:#241d18;--text:#ede4d8;--text-dim:#9b8e7e;--text-faint:#6b5f51;--border:#322820;--surface:#2b221c;--badge:#322820;}
+        /* Tema NIEBLA (sage claro) */
+        [data-theme="niebla"]{--bg:#e8e7e1;--accent:#7c8a6b;--fail:#b06a5c;--warning:#b8860b;--rest:#5f7d8a;--cardio:#bb7a3a;--card:#f3f2ec;--text:#33352e;--text-dim:#767a6b;--text-faint:#a3a596;--border:#d4d3c8;--surface:#dedcd2;--badge:#d4d3c8;}
+        /* Tema PERLA (off-white + slate) */
+        [data-theme="perla"]{--bg:#f4f3f1;--accent:#64748b;--fail:#c2554d;--warning:#b08900;--rest:#4d7c95;--cardio:#c2703a;--card:#ffffff;--text:#1f2937;--text-dim:#6b7280;--text-faint:#9ca3af;--border:#e3e1dd;--surface:#eceae6;--badge:#e3e1dd;}
+        /* Tema LINO (taupe oscuro) */
+        [data-theme="lino"]{--bg:#1c1b19;--accent:#b8ab98;--fail:#d9755f;--warning:#d4a441;--rest:#8a9bab;--cardio:#cc8044;--card:#262421;--text:#e8e4dd;--text-dim:#948c7e;--text-faint:#615b50;--border:#33302b;--surface:#2c2925;--badge:#33302b;}
+
         * { -webkit-tap-highlight-color: transparent; }
 
         body {
@@ -410,6 +427,26 @@
             50%      { box-shadow: 0 0 22px rgba(255, 0, 0, 0.6); }
         }
 
+        .install-banner {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; max-width: 450px; margin: 14px auto 0;
+            background: #0a1a0a; border: 1px solid var(--accent);
+            color: var(--text); border-radius: 14px;
+            padding: 10px 14px;
+            font-size: .8rem; font-weight: 700; letter-spacing: .3px;
+            box-shadow: 0 0 14px rgba(0, 255, 100, 0.2);
+        }
+        .install-banner #install-text { flex: 1; line-height: 1.3; }
+        .install-banner #install-btn {
+            background: var(--accent); color: #000; border: none;
+            border-radius: 8px; padding: 8px 14px;
+            font-weight: 900; letter-spacing: .5px; cursor: pointer; white-space: nowrap;
+        }
+        .install-banner #install-close {
+            background: transparent; border: none; color: var(--text-dim);
+            font-size: 1rem; cursor: pointer; padding: 4px;
+        }
+
         /* #2 Frase diaria */
         .daily-quote {
             max-width: 450px; margin: 18px auto 0; text-align: center;
@@ -428,7 +465,7 @@
         .milestone-msg { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 2px; color: var(--text); margin-top: 10px; }
 
         /* Selector de tema */
-        .theme-row { display: flex; gap: 14px; justify-content: center; margin-top: 26px; }
+        .theme-row { display: flex; gap: 14px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
         .theme-btn {
             width: 36px; height: 36px; border-radius: 50%; padding: 0;
             border: 2px solid var(--border); cursor: pointer; transition: transform .15s;
@@ -606,6 +643,12 @@
 
     <div id="danger-banner" class="danger-banner hidden"></div>
 
+    <div id="install-banner" class="install-banner hidden">
+        <span id="install-text"></span>
+        <button id="install-btn" type="button">INSTALAR</button>
+        <button id="install-close" type="button" aria-label="Cerrar">✕</button>
+    </div>
+
     <div class="streak-container">
         <div class="streak-label">RACHA ACTUAL</div>
         <div class="streak-number" id="streak-count">0</div>
@@ -739,6 +782,22 @@
                 style="background:linear-gradient(135deg,#f4ede2 50%,#c96442 50%)" onclick="setTheme('arena')"></button>
         <button class="theme-btn" data-theme-val="acero" title="Acero"
                 style="background:linear-gradient(135deg,#0c0c0c 50%,#f5f5f5 50%)" onclick="setTheme('acero')"></button>
+        <button class="theme-btn" data-theme-val="sintetik" title="Sintetik"
+                style="background:linear-gradient(135deg,#0d0221 50%,#ff2e97 50%)" onclick="setTheme('sintetik')"></button>
+        <button class="theme-btn" data-theme-val="oceano" title="Oceano"
+                style="background:linear-gradient(135deg,#0a1628 50%,#22d3ee 50%)" onclick="setTheme('oceano')"></button>
+        <button class="theme-btn" data-theme-val="sangre" title="Sangre"
+                style="background:linear-gradient(135deg,#0a0606 50%,#e0243a 50%)" onclick="setTheme('sangre')"></button>
+        <button class="theme-btn" data-theme-val="solar" title="Solar"
+                style="background:linear-gradient(135deg,#f0f4f8 50%,#2563eb 50%)" onclick="setTheme('solar')"></button>
+        <button class="theme-btn" data-theme-val="mocha" title="Mocha"
+                style="background:linear-gradient(135deg,#1a1512 50%,#c9a886 50%)" onclick="setTheme('mocha')"></button>
+        <button class="theme-btn" data-theme-val="niebla" title="Niebla"
+                style="background:linear-gradient(135deg,#e8e7e1 50%,#7c8a6b 50%)" onclick="setTheme('niebla')"></button>
+        <button class="theme-btn" data-theme-val="perla" title="Perla"
+                style="background:linear-gradient(135deg,#f4f3f1 50%,#64748b 50%)" onclick="setTheme('perla')"></button>
+        <button class="theme-btn" data-theme-val="lino" title="Lino"
+                style="background:linear-gradient(135deg,#1c1b19 50%,#b8ab98 50%)" onclick="setTheme('lino')"></button>
     </div>
 
     <div class="data-row notif-btn">
@@ -1899,6 +1958,48 @@
             sb.auth.getSession().then(({ data }) => onAuth(data.session));
             sb.auth.onAuthStateChange((_e, session) => onAuth(session));
         }
+
+        // Aviso de instalación: nativo en Android/Chrome, instrucción en iOS.
+        (function () {
+            const banner = document.getElementById('install-banner');
+            const text = document.getElementById('install-text');
+            const btn = document.getElementById('install-btn');
+            const close = document.getElementById('install-close');
+            const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            // Ya instalada, o el usuario ya lo cerró antes: no molestar.
+            if (standalone || localStorage.getItem('installDismissed')) return;
+
+            close.addEventListener('click', () => {
+                banner.classList.add('hidden');
+                localStorage.setItem('installDismissed', '1');
+            });
+
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            if (isIOS) {
+                // iOS Safari no tiene API de instalación: solo se puede explicar.
+                text.textContent = 'Instálala como app: pulsa Compartir y luego "Añadir a inicio".';
+                btn.classList.add('hidden');
+                banner.classList.remove('hidden');
+                return;
+            }
+
+            // Android/Chrome/Edge: capturamos el evento y mostramos botón nativo.
+            let deferred = null;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferred = e;
+                text.textContent = 'Instala la app en tu inicio para abrirla a pantalla completa.';
+                banner.classList.remove('hidden');
+            });
+            btn.addEventListener('click', async () => {
+                if (!deferred) return;
+                deferred.prompt();
+                await deferred.userChoice;
+                deferred = null;
+                banner.classList.add('hidden');
+            });
+            window.addEventListener('appinstalled', () => banner.classList.add('hidden'));
+        })();
 
         // Registra el service worker (necesario para instalar como app / offline).
         if ('serviceWorker' in navigator) {
