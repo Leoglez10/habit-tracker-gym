@@ -460,14 +460,81 @@
             border-radius: 8px; padding: 11px 12px; font-size: .85rem; text-align: center; font-weight: 700;
         }
         .grp-sep { height: 1px; background: var(--border); margin: 6px 0; }
-        .lb-title { font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 12px; }
-        .lb { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
-        .lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px 2px; }
-        .lb-row.me, .lb-row.me + .lb-sub { background: rgba(0, 255, 65, .07); }
-        .lb-pos { font-size: 1rem; min-width: 28px; text-align: center; }
-        .lb-name { flex: 1; text-align: left; font-weight: 800; font-size: .95rem; }
-        .lb-streak { font-family: 'Bebas Neue'; font-size: 1.3rem; color: var(--accent); }
-        .lb-sub { font-size: .6rem; color: var(--text-faint); letter-spacing: .5px; padding: 0 10px 8px 48px; text-align: left; }
+        /* Cabecera del grupo */
+        .lb-head { margin-bottom: 18px; }
+        .lb-group { font-family: 'Bebas Neue'; font-size: 1.8rem; letter-spacing: 2px; color: var(--text); }
+        .code-pill {
+            margin-top: 8px; background: var(--surface); color: var(--text-dim);
+            border: 1px dashed var(--accent); border-radius: 50px; padding: 7px 16px;
+            font-size: .72rem; font-weight: 700; letter-spacing: 1px; cursor: pointer;
+        }
+        .code-pill b { color: var(--accent); letter-spacing: 2px; }
+        .code-pill:active { transform: scale(.96); }
+
+        /* Avatares (foto Google o iniciales con color) */
+        .av {
+            position: relative; border-radius: 50%; overflow: hidden; flex: 0 0 auto;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 800; line-height: 1;
+        }
+        .av-fallback { background: hsl(var(--hue), 52%, 42%); }
+        .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .av-lg { width: 86px; height: 86px; font-size: 1.7rem; }
+        .av-md { width: 64px; height: 64px; font-size: 1.3rem; }
+        .av-sm { width: 38px; height: 38px; font-size: .85rem; }
+
+        /* Podio top-3 */
+        .podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin-bottom: 18px; }
+        .podium-col {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px 14px 0 0; padding: 12px 6px 0; min-width: 0;
+        }
+        .podium-col.empty { background: transparent; border: none; }
+        .podium-col.p1 { padding-top: 18px; border-color: var(--warning); box-shadow: 0 0 16px rgba(255,215,0,.18); }
+        .podium-col.me { border-color: var(--accent); }
+        .podium-medal { font-size: 1.5rem; }
+        .podium-col.p1 .podium-medal { font-size: 1.9rem; }
+        .av-lg { border: 3px solid var(--warning); }
+        .podium-name {
+            font-weight: 800; font-size: .8rem; max-width: 100%; text-align: center;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .podium-streak { font-family: 'Bebas Neue'; font-size: 1.5rem; color: var(--accent); }
+        .podium-sub { font-size: .55rem; letter-spacing: .5px; color: var(--text-faint); }
+        .podium-stand {
+            font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--text-faint);
+            background: var(--badge); width: 100%; margin-top: 6px; border-radius: 6px 6px 0 0;
+        }
+        .podium-col.p1 .podium-stand { height: 56px; line-height: 56px; }
+        .podium-col.p2 .podium-stand { height: 40px; line-height: 40px; }
+        .podium-col.p3 .podium-stand { height: 28px; line-height: 28px; }
+
+        /* Lista 4º en adelante */
+        .lb { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .lb-row {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+        }
+        .lb-row.me { border-color: var(--accent); background: rgba(0, 255, 65, .06); }
+        .lb-pos { font-family: 'Bebas Neue'; font-size: 1.2rem; min-width: 24px; text-align: center; color: var(--text-faint); }
+        .lb-info { flex: 1; min-width: 0; text-align: left; }
+        .lb-name { font-weight: 800; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .chips { display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
+        .chip {
+            font-size: .58rem; font-weight: 700; color: var(--text-dim);
+            background: var(--badge); border-radius: 50px; padding: 2px 7px;
+        }
+        .lb-streak { font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--accent); }
+
+        /* Toast */
+        .toast {
+            position: fixed; left: 50%; bottom: 40px; transform: translate(-50%, 20px);
+            background: var(--accent); color: #000; font-weight: 800; font-size: .8rem;
+            padding: 10px 20px; border-radius: 50px; z-index: 100000;
+            opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
     </style>
 </head>
 <body>
@@ -695,6 +762,10 @@
                 || meta.full_name || meta.name
                 || (user && user.email ? user.email.split('@')[0] : 'Anónimo');
         }
+        function avatarUrl() {
+            const meta = (user && user.user_metadata) || {};
+            return meta.avatar_url || meta.picture || null;
+        }
         // Stats all-time para el leaderboard (reusa computeStreaks + computeStats).
         function computeProfile() {
             const { streak, best } = computeStreaks();
@@ -715,7 +786,7 @@
         async function pushProfile() {
             if (!sb || !user) return;
             await sb.from('profiles').upsert({
-                id: user.id, display_name: displayName(),
+                id: user.id, display_name: displayName(), avatar_url: avatarUrl(),
                 ...computeProfile(), updated_at: new Date().toISOString(),
             });
         }
@@ -783,6 +854,7 @@
             user = session ? session.user : null;
             renderAuth();
             if (user) pullCloud();
+            processPendingJoin(); // une al grupo si se entró por un link ?join=
         }
 
         async function resetToday() {
@@ -1288,17 +1360,26 @@
             x.fillText('SISTEMA DE DISCIPLINA', 540, 1010);
 
             c.toBlob(async (blob) => {
-                const file = new File([blob], 'racha.png', { type: 'image/png' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try { await navigator.share({ files: [file], title: 'Mi racha 🔥' }); return; }
-                    catch (e) { if (e.name === 'AbortError') return; } // usuario canceló
-                }
-                // Fallback: descarga la imagen.
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'racha.png'; a.click();
-                URL.revokeObjectURL(url);
+                if (await shareImageBlob(blob, 'racha.png', { title: 'Mi racha 🔥' })) return;
+                downloadBlob(blob, 'racha.png'); // fallback: descarga
             }, 'image/png');
+        }
+
+        // Comparte un PNG (con título/texto opcional) por el menú nativo. Devuelve
+        // true si se compartió (o el usuario canceló), false si el dispositivo no puede.
+        async function shareImageBlob(blob, fileName, payload = {}) {
+            const file = new File([blob], fileName, { type: 'image/png' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try { await navigator.share({ files: [file], ...payload }); return true; }
+                catch (e) { if (e.name === 'AbortError') return true; } // usuario canceló
+            }
+            return false;
+        }
+        function downloadBlob(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = fileName; a.click();
+            URL.revokeObjectURL(url);
         }
 
         // ===== GRUPOS / LEADERBOARD =====
@@ -1364,44 +1445,194 @@
             renderGroupsList();
         }
 
+        // --- Avatares: foto de Google si hay, si no iniciales con color por nombre ---
+        function initials(name) {
+            return (String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('')
+                .toUpperCase()) || '?';
+        }
+        function avatarHue(name) {
+            let h = 0;
+            for (const ch of String(name || '')) h = (h * 31 + ch.charCodeAt(0)) % 360;
+            return h;
+        }
+        // Iniciales de fondo + foto encima; si la foto falla, se quita y quedan las iniciales.
+        function avatarHtml(m, cls = '') {
+            const img = m.avatar_url
+                ? `<img src="${escHtml(m.avatar_url)}" referrerpolicy="no-referrer" onerror="this.remove()">`
+                : '';
+            return `<div class="av av-fallback ${cls}" style="--hue:${avatarHue(m.display_name)}">` +
+                   `${escHtml(initials(m.display_name))}${img}</div>`;
+        }
+
         async function openLeaderboard(i) {
             const g = myGroups[i];
             const body = document.getElementById('groups-body');
             body.innerHTML = '<div class="modal-status">Cargando…</div>';
             const { data, error } = await sb.rpc('group_leaderboard', { p_group_id: g.id });
             if (error) { body.innerHTML = '<div class="modal-status">No se pudo cargar la tabla.</div>'; return; }
-            let html = `<div class="lb-title">${escHtml(g.name)} · cód ${escHtml(g.code)}</div><div class="lb">`;
-            (data || []).forEach((m, idx) => {
-                const pos = ['🥇', '🥈', '🥉'][idx] || (idx + 1) + '.';
-                html += `<div class="lb-row${m.is_me ? ' me' : ''}">
-                    <span class="lb-pos">${pos}</span>
-                    <span class="lb-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</span>
-                    <span class="lb-streak">${m.current_streak}🔥</span></div>
-                  <div class="lb-sub">récord ${m.best_streak} · ✨${m.perfect_days} · 💪${m.entrenos} · 🏃${m.cardios} · ${m.rate}%</div>`;
-            });
-            html += '</div>';
+            const rows = data || [];
+
+            // Cabecera: nombre + código copiable.
+            let html = `<div class="lb-head">
+                <div class="lb-group">${escHtml(g.name)}</div>
+                <button class="code-pill" onclick="copyCode('${g.code}')">CÓDIGO <b>${escHtml(g.code)}</b> 📋</button>
+              </div>`;
+
+            // Podio top-3 (orden visual: 2º · 1º · 3º).
+            const podiumCol = (m, rank) => {
+                if (!m) return '<div class="podium-col empty"></div>';
+                const medal = ['🥇', '🥈', '🥉'][rank - 1];
+                return `<div class="podium-col p${rank}${m.is_me ? ' me' : ''}">
+                    <div class="podium-medal">${medal}</div>
+                    ${avatarHtml(m, rank === 1 ? 'av-lg' : 'av-md')}
+                    <div class="podium-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</div>
+                    <div class="podium-streak">${m.current_streak}🔥</div>
+                    <div class="podium-sub">récord ${m.best_streak}</div>
+                    <div class="podium-stand">${rank}</div>
+                  </div>`;
+            };
+            html += `<div class="podium">${podiumCol(rows[1], 2)}${podiumCol(rows[0], 1)}${podiumCol(rows[2], 3)}</div>`;
+
+            // Resto (4º en adelante) en lista con avatar y chips de stats.
+            const rest = rows.slice(3);
+            if (rest.length) {
+                html += '<div class="lb">';
+                rest.forEach((m, idx) => {
+                    html += `<div class="lb-row${m.is_me ? ' me' : ''}">
+                        <span class="lb-pos">${idx + 4}</span>
+                        ${avatarHtml(m, 'av-sm')}
+                        <div class="lb-info">
+                            <div class="lb-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</div>
+                            <div class="chips"><span class="chip">✨${m.perfect_days}</span><span class="chip">💪${m.entrenos}</span><span class="chip">🏃${m.cardios}</span><span class="chip">${m.rate}%</span></div>
+                        </div>
+                        <span class="lb-streak">${m.current_streak}🔥</span></div>`;
+                });
+                html += '</div>';
+            }
+
+            const danger = g.is_owner
+                ? `<button class="btn-period" onclick="doDeleteGroup(${i})" style="border-color:var(--fail);color:var(--fail)">🗑️ ELIMINAR GRUPO</button>`
+                : `<button class="btn-period" onclick="doLeaveGroup(${i})" style="border-color:var(--fail);color:var(--fail)">SALIR</button>`;
             html += `<div class="group-forms">
                 <button class="btn-period" onclick="renderGroupsList()">← VOLVER</button>
-                <button class="btn-period" onclick="shareGroupCode(${i})">COMPARTIR</button>
-                <button class="btn-period" onclick="doLeaveGroup(${i})" style="border-color:var(--fail);color:var(--fail)">SALIR</button>
+                <button class="btn-period" onclick="shareGroupCode(${i})">📣 COMPARTIR</button>
+                ${danger}
               </div>`;
             body.innerHTML = html;
         }
 
+        async function copyCode(code) {
+            try { await navigator.clipboard.writeText(code); toast('Código copiado'); }
+            catch { alert('Código del grupo: ' + code); }
+        }
+
+        // Link de invitación: abre la app y une al grupo solo (deep-link ?join=CODE).
+        function joinLink(code) { return location.origin + location.pathname + '?join=' + code; }
+
+        // Compartir = tarjeta imagen con el código + link de invitación en el texto.
         async function shareGroupCode(i) {
             const g = myGroups[i];
-            const text = `Únete a mi grupo "${g.name}" en SISTEMA DE DISCIPLINA. Código: ${g.code}`;
-            if (navigator.share) {
-                try { await navigator.share({ title: 'Grupo 🏆', text }); return; }
-                catch (e) { if (e.name === 'AbortError') return; }
-            }
-            try { await navigator.clipboard.writeText(g.code); alert('Código copiado: ' + g.code); }
-            catch { alert('Código del grupo: ' + g.code); }
+            const link = joinLink(g.code);
+            const text = `Únete a mi grupo "${g.name}" en SISTEMA DE DISCIPLINA 🏆\n${link}`;
+            const blob = await groupCardBlob(g);
+            if (blob && await shareImageBlob(blob, 'grupo.png', { title: 'Grupo 🏆', text })) return;
+            // Fallback: copia el link de invitación.
+            try { await navigator.clipboard.writeText(link); toast('Link de invitación copiado'); }
+            catch { alert(text); }
         }
+
+        // Dibuja la tarjeta 1080x1080 del grupo (mismo estilo que PRESUMIR).
+        function groupCardBlob(g) {
+            return new Promise(async (resolve) => {
+                const css = getComputedStyle(document.documentElement);
+                const BG = css.getPropertyValue('--bg').trim() || '#000';
+                const ACC = css.getPropertyValue('--accent').trim() || '#00FF41';
+                const DIM = css.getPropertyValue('--text-dim').trim() || '#888';
+                const FAINT = css.getPropertyValue('--text-faint').trim() || '#555';
+                await document.fonts.ready;
+                const c = document.createElement('canvas');
+                c.width = c.height = 1080;
+                const x = c.getContext('2d');
+                x.fillStyle = BG; x.fillRect(0, 0, 1080, 1080);
+                x.textAlign = 'center';
+                x.fillStyle = DIM; x.font = '40px Inter, sans-serif';
+                x.fillText('TE INVITO A MI GRUPO', 540, 250);
+                x.fillStyle = ACC; x.font = '900 84px Inter, sans-serif';
+                wrapText(x, g.name.toUpperCase(), 540, 380, 980, 90);
+                x.fillStyle = DIM; x.font = '40px Inter, sans-serif';
+                x.fillText('CÓDIGO PARA UNIRTE', 540, 600);
+                x.fillStyle = ACC; x.shadowColor = ACC; x.shadowBlur = 60;
+                x.font = '200px "Bebas Neue", sans-serif';
+                x.fillText(g.code, 540, 800); x.shadowBlur = 0;
+                x.fillStyle = FAINT; x.font = '900 42px Inter, sans-serif';
+                x.fillText('SISTEMA DE DISCIPLINA', 540, 1000);
+                c.toBlob(b => resolve(b), 'image/png');
+            });
+        }
+        function wrapText(ctx, text, cx, y, maxW, lh) {
+            const words = String(text).split(' ');
+            const lines = []; let line = '';
+            for (const w of words) {
+                const t = line ? line + ' ' + w : w;
+                if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; }
+                else line = t;
+            }
+            if (line) lines.push(line);
+            lines.forEach((l, i) => ctx.fillText(l, cx, y + i * lh));
+        }
+
         async function doLeaveGroup(i) {
             if (!confirm('¿Salir de este grupo?')) return;
             await sb.rpc('leave_group', { p_group_id: myGroups[i].id });
             renderGroupsList();
+        }
+        async function doDeleteGroup(i) {
+            if (!confirm(`¿Eliminar el grupo "${myGroups[i].name}" para todos? No se puede deshacer.`)) return;
+            await sb.rpc('delete_group', { p_group_id: myGroups[i].id });
+            renderGroupsList();
+        }
+
+        // --- Deep-link: abrir con ?join=CODE une al grupo (tras login si hace falta) ---
+        function getJoinCode() {
+            const fromUrl = new URLSearchParams(location.search).get('join');
+            return ((fromUrl || localStorage.getItem('pendingJoin') || '').trim().toUpperCase()) || null;
+        }
+        function clearJoinCode() {
+            localStorage.removeItem('pendingJoin');
+            if (new URLSearchParams(location.search).has('join')) {
+                history.replaceState(null, '', location.origin + location.pathname + location.hash);
+            }
+        }
+        async function processPendingJoin() {
+            const code = getJoinCode();
+            if (!code || !sb) return;
+            if (!user) {
+                localStorage.setItem('pendingJoin', code); // sobrevive al redirect de Google
+                openGroups();
+                document.getElementById('groups-body').innerHTML =
+                    `<div class="modal-status">Entra con Google (abajo) para unirte al grupo con código <b>${escHtml(code)}</b>.</div>`;
+                return;
+            }
+            const { error } = await sb.rpc('join_group', { p_code: code });
+            clearJoinCode();
+            openGroups();
+            if (error) {
+                document.getElementById('groups-body').innerHTML =
+                    '<div class="modal-status">Código inválido o el grupo ya no existe.</div>';
+                return;
+            }
+            await renderGroupsList();
+            const idx = myGroups.findIndex(g => g.code === code);
+            if (idx >= 0) openLeaderboard(idx);
+        }
+
+        // Toast breve (copiar código / link).
+        function toast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast'; t.innerText = msg;
+            document.body.appendChild(t);
+            requestAnimationFrame(() => t.classList.add('show'));
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 1600);
         }
 
         // ===== MOTIVACIÓN =====
