@@ -23,6 +23,7 @@
             --fail: #FF0000;
             --warning: #FFD700;
             --rest: #00D0FF;
+            --cardio: #FF8C00;
             --card: #0a0a0a;
             --text: #ffffff;
             --text-dim: #888888;
@@ -39,6 +40,7 @@
             --fail: #b54034;
             --warning: #b8860b;
             --rest: #5b8aa6;
+            --cardio: #c97a2a;
             --card: #fbf7f0;
             --text: #2b2622;
             --text-dim: #6b6258;
@@ -55,6 +57,7 @@
             --fail: #ff5d5d;
             --warning: #bdbdbd;
             --rest: #7fb0c4;
+            --cardio: #e8902f;
             --card: #151515;
             --text: #f0f0f0;
             --text-dim: #9a9a9a;
@@ -248,6 +251,7 @@
             50%      { background-position: 100% 50%; box-shadow: 0 0 18px #FFD700, 0 0 6px #fff inset; }
         }
         .day-dot.rest { background: var(--rest); color: black; box-shadow: 0 0 10px var(--rest); }
+        .day-dot.cardio { background: var(--cardio); color: black; box-shadow: 0 0 10px var(--cardio); }
         .day-dot.half { border: 2px solid var(--warning); color: var(--warning); }
         .day-dot.failed {
             background: #2a0000;
@@ -291,6 +295,26 @@
             cursor: pointer;
             font-size: 0.8rem;
         }
+
+        /* Botón "corregir el día de hoy": pill discreto pero con presencia. */
+        .fix-btn {
+            margin-top: 22px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 11px 22px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: .3px;
+            cursor: pointer;
+            transition: border-color .15s, color .15s, transform .1s;
+        }
+        .fix-btn:hover { border-color: var(--accent); color: var(--text); }
+        .fix-btn:active { transform: scale(.96); border-color: var(--accent); }
 
         /* Barra de progreso al siguiente rango */
         .rank-progress { width: 100%; max-width: 220px; margin: 12px auto 0; }
@@ -418,6 +442,32 @@
         .month-lbl { font-size: .6rem; letter-spacing: 1px; color: var(--text-faint); margin-top: 6px; text-align: center; }
 
         .notif-btn { margin-top: 10px; }
+
+        /* Grupos / leaderboard */
+        .group-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .group-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            padding: 14px 16px; cursor: pointer; color: var(--text);
+            font-family: inherit; text-align: left;
+        }
+        .group-item:active { border-color: var(--accent); transform: scale(.98); }
+        .group-name { font-weight: 800; font-size: .95rem; }
+        .group-meta { font-size: .65rem; color: var(--text-faint); letter-spacing: 1px; }
+        .group-forms { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .grp-input {
+            background: var(--surface); color: var(--text); border: 1px solid var(--border);
+            border-radius: 8px; padding: 11px 12px; font-size: .85rem; text-align: center; font-weight: 700;
+        }
+        .grp-sep { height: 1px; background: var(--border); margin: 6px 0; }
+        .lb-title { font-family: 'Bebas Neue'; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 12px; }
+        .lb { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
+        .lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px 2px; }
+        .lb-row.me, .lb-row.me + .lb-sub { background: rgba(0, 255, 65, .07); }
+        .lb-pos { font-size: 1rem; min-width: 28px; text-align: center; }
+        .lb-name { flex: 1; text-align: left; font-weight: 800; font-size: .95rem; }
+        .lb-streak { font-family: 'Bebas Neue'; font-size: 1.3rem; color: var(--accent); }
+        .lb-sub { font-size: .6rem; color: var(--text-faint); letter-spacing: .5px; padding: 0 10px 8px 48px; text-align: left; }
     </style>
 </head>
 <body>
@@ -465,7 +515,7 @@
 
         <div id="finished" class="question-box hidden">
             <h2 id="final-msg">DÍA REGISTRADO</h2>
-            <button class="reset-btn" onclick="resetToday()">Corregir error de hoy</button>
+            <button class="fix-btn" onclick="resetToday()">✏️ Corregir el día de hoy</button>
         </div>
     </div>
 
@@ -505,6 +555,7 @@
             <div id="modal-edit" class="hidden">
                 <button class="btn btn-yes" onclick="setDay('legendary')">DÍA PERFECTO ✨</button>
                 <button class="btn btn-yes" onclick="setDay('perfect')">ENTRENO + COMIDA 💪</button>
+                <button class="btn btn-rest" onclick="setDay('cardio_only')" style="background:#1f1405;color:var(--cardio);border:1px solid var(--cardio);box-shadow:0 0 12px rgba(255,140,0,.15)">SOLO CARDIO 🏃</button>
                 <button class="btn btn-rest" onclick="setDay('rest')">DESCANSO 🛌</button>
                 <button class="btn btn-no" onclick="setDay('failed')">DÍA FALLADO ❌</button>
                 <button class="reset-btn" onclick="setDay('clear')">Borrar este día</button>
@@ -530,8 +581,17 @@
         </div>
     </div>
 
+    <div id="groups-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeGroups()">
+        <div class="modal-box">
+            <div class="modal-date">🏆 GRUPOS</div>
+            <div id="groups-body"></div>
+            <button class="btn btn-no" style="margin-top:18px" onclick="closeGroups()">CERRAR</button>
+        </div>
+    </div>
+
     <div class="data-row">
         <button class="data-btn" onclick="openStats()">📊 ESTADÍSTICAS</button>
+        <button class="data-btn" onclick="openGroups()">🏆 GRUPOS</button>
     </div>
     <div class="data-row" id="backup-row">
         <button class="data-btn" onclick="exportData()">⬇ EXPORTAR COPIA</button>
@@ -593,9 +653,8 @@
             persist(); // guarda tras cada respuesta (no se pierde al recargar)
             if (type === 'exercise') {
                 document.getElementById('q-exercise').classList.add('hidden');
-                // Solo se pregunta cardio si entrenaste; descanso/no salta a comida.
-                if (value === true) document.getElementById('q-cardio').classList.remove('hidden');
-                else document.getElementById('q-food').classList.remove('hidden');
+                // Cardio es independiente: se pregunta siempre (puedes hacer cardio sin ir al gym).
+                document.getElementById('q-cardio').classList.remove('hidden');
             } else if (type === 'cardio') {
                 document.getElementById('q-cardio').classList.add('hidden');
                 document.getElementById('q-food').classList.remove('hidden');
@@ -619,6 +678,46 @@
             setCloudStatus('saving');
             clearTimeout(syncT);
             syncT = setTimeout(pushCloud, 1200);
+            queueProfile(); // publica stats agregadas para el leaderboard
+        }
+
+        // ---- Perfil público (solo stats agregadas; el registro diario sigue privado) ----
+        let profileT = null;
+        function queueProfile() {
+            if (!sb || !user) return;
+            clearTimeout(profileT);
+            profileT = setTimeout(pushProfile, 1500);
+        }
+        // Nombre a mostrar en grupos: elegido por el usuario, o el de Google, o el email.
+        function displayName() {
+            const meta = (user && user.user_metadata) || {};
+            return localStorage.getItem('displayName')
+                || meta.full_name || meta.name
+                || (user && user.email ? user.email.split('@')[0] : 'Anónimo');
+        }
+        // Stats all-time para el leaderboard (reusa computeStreaks + computeStats).
+        function computeProfile() {
+            const { streak, best } = computeStreaks();
+            const all = computeStats(history, '0000-00-00', '9999-99-99');
+            let good = 0, logged = 0;
+            for (const k in history) {
+                const d = history[k];
+                if (!d || d.exercise === null || d.food === null) continue;
+                logged++;
+                if (isGood(d)) good++;
+            }
+            return {
+                current_streak: streak, best_streak: best,
+                perfect_days: all.diasPerfectos, entrenos: all.entrenos, cardios: all.cardios,
+                rate: logged ? Math.round(good / logged * 100) : 0,
+            };
+        }
+        async function pushProfile() {
+            if (!sb || !user) return;
+            await sb.from('profiles').upsert({
+                id: user.id, display_name: displayName(),
+                ...computeProfile(), updated_at: new Date().toISOString(),
+            });
         }
 
         async function pushCloud() {
@@ -736,7 +835,7 @@
 
         // Rebote al soltar cualquier botón (delegado, 1 listener para todos).
         document.addEventListener('click', (e) => {
-            const b = e.target.closest('.btn, .data-btn, .btn-period, .google-btn, .logout-btn');
+            const b = e.target.closest('.btn, .data-btn, .btn-period, .google-btn, .logout-btn, .fix-btn');
             if (!b) return;
             b.classList.remove('pressed');
             void b.offsetWidth;            // reinicia la animación si se repite
@@ -746,8 +845,8 @@
 
         function updateUI() {
             const c = currentDay;
-            // El día está completo cuando hay comida y, si entrenó, también respondió cardio.
-            const done = c.food !== null && (c.exercise !== true || c.cardio !== null);
+            // El día está completo cuando se respondió ejercicio, cardio y comida.
+            const done = c.food !== null && c.cardio !== null && c.exercise !== null;
             const ex = document.getElementById('q-exercise');
             const ca = document.getElementById('q-cardio');
             const fo = document.getElementById('q-food');
@@ -760,8 +859,8 @@
             } else if (c.exercise === null) {
                 // Sin registro hoy (p.ej. borrado desde el calendario): vuelve a la 1ª pregunta.
                 ex.classList.remove('hidden');
-            } else if (c.exercise === true && c.cardio === null) {
-                // Entrenó pero falta cardio.
+            } else if (c.cardio === null) {
+                // Respondió ejercicio pero falta cardio.
                 ca.classList.remove('hidden');
             } else {
                 // Falta comida.
@@ -777,14 +876,15 @@
             if (d.exercise === true && d.cardio && d.food) return 'DÍA PERFECTO ✨🔥';
             if (d.exercise === true && d.food) return 'DÍA CONQUISTADO 🔥';
             if (d.exercise === 'rest' && d.food) return 'DESCANSO MERECIDO 🛌';
+            if (d.exercise === false && d.cardio && d.food) return 'CARDIO + COMIDA 🏃';
             if (d.exercise === true || d.exercise === 'rest' || d.food) return 'A MEDIAS. MAÑANA TODO.';
             return 'DÍA PERDIDO. LEVÁNTATE.';
         }
 
-        // ¿El día cuenta para la racha? Comiste bien Y (entrenaste O descansaste).
-        // El día de descanso planeado NO rompe la racha.
+        // ¿El día cuenta para la racha? Comiste bien Y (entrenaste, descansaste o hiciste cardio).
+        // El descanso planeado y el cardio-solo NO rompen la racha.
         function isGood(day) {
-            return !!(day && day.food && (day.exercise === true || day.exercise === 'rest'));
+            return !!(day && day.food && (day.exercise === true || day.exercise === 'rest' || day.cardio === true));
         }
 
         // Escalera de rangos (largo plazo). min = racha necesaria para alcanzarlo.
@@ -809,21 +909,21 @@
             console.assert(rankInfo(0).current.name === 'RECLUTA', 'rank 0');
             console.assert(rankInfo(5).current.name === 'GUERRERO', 'rank 5');
             console.assert(rankInfo(200).next === null, 'rank max sin next');
+            // Cardio-solo + comida cuenta para la racha; sin comida no.
+            console.assert(isGood({ exercise: false, cardio: true, food: true }) === true, 'cardio-solo válido');
+            console.assert(isGood({ exercise: false, cardio: true, food: false }) === false, 'cardio sin comida no');
         })();
 
-        function renderStats() {
-            // Racha ACTUAL: días válidos consecutivos en el calendario,
-            // empezando hoy (o ayer si hoy aún no se registra). Cualquier
-            // hueco o día no-válido la rompe.
+        // Racha ACTUAL + RÉCORD histórico. Lo usa la UI y el perfil del leaderboard.
+        // Racha actual: días válidos consecutivos desde hoy (o ayer si hoy no se registra).
+        // Récord: racha consecutiva más larga de todo el historial.
+        function computeStreaks() {
             let streak = 0;
             const t = history[today];
             const todayComplete = t && t.exercise !== null && t.food !== null;
-
             if (todayComplete && !isGood(t)) {
-                // Cerraste el día de hoy y NO cuenta: la racha se rompe a 0.
-                streak = 0;
+                streak = 0; // cerraste hoy y no cuenta: racha rota
             } else {
-                // Hoy válido, o aún sin terminar/registrar: mide racha consecutiva.
                 let cursor = new Date();
                 if (!isGood(t)) cursor.setDate(cursor.getDate() - 1); // gracia: hasta ayer
                 while (isGood(history[localKey(cursor)])) {
@@ -831,11 +931,8 @@
                     cursor.setDate(cursor.getDate() - 1);
                 }
             }
-
-            // RÉCORD histórico: racha consecutiva más larga de todo el historial.
             let best = 0, run = 0, prev = null;
-            const days = Object.keys(history).sort();
-            for (const k of days) {
+            for (const k of Object.keys(history).sort()) {
                 if (!isGood(history[k])) { run = 0; prev = k; continue; }
                 if (prev !== null) {
                     const gap = (new Date(k) - new Date(prev)) / 86400000;
@@ -847,7 +944,12 @@
                 prev = k;
             }
             best = Math.max(best, streak);
+            return { streak, best, todayComplete, t };
+        }
 
+        function renderStats() {
+            const { streak, best, todayComplete, t } = computeStreaks();
+            const days = Object.keys(history);
             document.getElementById('streak-count').innerText = streak;
             document.getElementById('record-count').innerText = best;
 
@@ -937,7 +1039,8 @@
                     if (data.exercise === true && data.cardio && data.food) dot.classList.add('legendary');
                     else if (data.exercise === true && data.food) dot.classList.add('perfect');
                     else if (data.exercise === 'rest' && data.food) dot.classList.add('rest');
-                    else if (data.exercise || data.food) dot.classList.add('half');
+                    else if (data.cardio === true && data.food) dot.classList.add('cardio'); // solo cardio (sin gym)
+                    else if (data.exercise || data.food || data.cardio) dot.classList.add('half');
                     else dot.classList.add('failed');
                 }
 
@@ -984,7 +1087,7 @@
                      :                       'Comida sin registrar';
             const ca = data.cardio === true  ? 'Cardio ✅ 🏃'
                      : data.cardio === false ? 'Sin cardio'
-                     :                         null; // null: no se preguntó (descanso/no entreno)
+                     :                         null; // null: día antiguo sin registro de cardio
             return [ex, ca, fo].filter(Boolean).join('\n');
         }
 
@@ -1011,9 +1114,10 @@
         // Aplica un estado al día seleccionado en el modal.
         function setDay(state) {
             const map = {
-                legendary: { exercise: true,   cardio: true,  food: true  },
-                perfect:   { exercise: true,   cardio: false, food: true  },
-                rest:      { exercise: 'rest', cardio: null,  food: true  },
+                legendary:  { exercise: true,   cardio: true,  food: true  },
+                perfect:    { exercise: true,   cardio: false, food: true  },
+                cardio_only:{ exercise: false,  cardio: true,  food: true  },
+                rest:       { exercise: 'rest', cardio: null,  food: true  },
                 failed:    { exercise: false,  cardio: null,  food: false },
             };
             if (state === 'clear') delete history[modalKey];
@@ -1195,6 +1299,109 @@
                 a.href = url; a.download = 'racha.png'; a.click();
                 URL.revokeObjectURL(url);
             }, 'image/png');
+        }
+
+        // ===== GRUPOS / LEADERBOARD =====
+        // Todo el acceso entre usuarios pasa por RPCs security-definer en Supabase.
+        let myGroups = [];
+
+        function escHtml(s) {
+            return String(s).replace(/[&<>"']/g, c =>
+                ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function openGroups() {
+            document.getElementById('groups-modal').classList.remove('hidden');
+            renderGroupsList();
+        }
+        function closeGroups() {
+            document.getElementById('groups-modal').classList.add('hidden');
+        }
+
+        async function renderGroupsList() {
+            const body = document.getElementById('groups-body');
+            if (!sb || !user) {
+                body.innerHTML = '<div class="modal-status">Entra con Google (abajo) para crear grupos y competir con tus amigos.</div>';
+                return;
+            }
+            body.innerHTML = '<div class="modal-status">Cargando…</div>';
+            const { data, error } = await sb.rpc('my_groups');
+            if (error) { body.innerHTML = '<div class="modal-status">No se pudieron cargar los grupos.</div>'; return; }
+            pushProfile(); // asegura que tu fila exista/actualice antes de competir
+            myGroups = data || [];
+            let html = '';
+            if (myGroups.length) {
+                html += '<div class="group-list">';
+                myGroups.forEach((g, i) => {
+                    html += `<button class="group-item" onclick="openLeaderboard(${i})">
+                        <span class="group-name">${escHtml(g.name)}</span>
+                        <span class="group-meta">${g.member_count} 👥 · ${escHtml(g.code)}</span></button>`;
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="modal-status">Aún no estás en ningún grupo. Crea uno o únete con un código.</div>';
+            }
+            html += `<div class="group-forms">
+                <input id="grp-name" class="grp-input" placeholder="Nombre del grupo" maxlength="30">
+                <button class="btn-period" onclick="doCreateGroup()">CREAR GRUPO</button>
+                <div class="grp-sep"></div>
+                <input id="grp-code" class="grp-input" placeholder="CÓDIGO" maxlength="6" style="text-transform:uppercase">
+                <button class="btn-period" onclick="doJoinGroup()">UNIRME</button>
+              </div>`;
+            body.innerHTML = html;
+        }
+
+        async function doCreateGroup() {
+            const name = document.getElementById('grp-name').value;
+            const { error } = await sb.rpc('create_group', { p_name: name });
+            if (error) { alert('No se pudo crear el grupo.'); return; }
+            renderGroupsList();
+        }
+        async function doJoinGroup() {
+            const code = (document.getElementById('grp-code').value || '').trim().toUpperCase();
+            if (!code) { alert('Escribe el código del grupo.'); return; }
+            const { error } = await sb.rpc('join_group', { p_code: code });
+            if (error) { alert('Código inválido o el grupo no existe.'); return; }
+            renderGroupsList();
+        }
+
+        async function openLeaderboard(i) {
+            const g = myGroups[i];
+            const body = document.getElementById('groups-body');
+            body.innerHTML = '<div class="modal-status">Cargando…</div>';
+            const { data, error } = await sb.rpc('group_leaderboard', { p_group_id: g.id });
+            if (error) { body.innerHTML = '<div class="modal-status">No se pudo cargar la tabla.</div>'; return; }
+            let html = `<div class="lb-title">${escHtml(g.name)} · cód ${escHtml(g.code)}</div><div class="lb">`;
+            (data || []).forEach((m, idx) => {
+                const pos = ['🥇', '🥈', '🥉'][idx] || (idx + 1) + '.';
+                html += `<div class="lb-row${m.is_me ? ' me' : ''}">
+                    <span class="lb-pos">${pos}</span>
+                    <span class="lb-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</span>
+                    <span class="lb-streak">${m.current_streak}🔥</span></div>
+                  <div class="lb-sub">récord ${m.best_streak} · ✨${m.perfect_days} · 💪${m.entrenos} · 🏃${m.cardios} · ${m.rate}%</div>`;
+            });
+            html += '</div>';
+            html += `<div class="group-forms">
+                <button class="btn-period" onclick="renderGroupsList()">← VOLVER</button>
+                <button class="btn-period" onclick="shareGroupCode(${i})">COMPARTIR</button>
+                <button class="btn-period" onclick="doLeaveGroup(${i})" style="border-color:var(--fail);color:var(--fail)">SALIR</button>
+              </div>`;
+            body.innerHTML = html;
+        }
+
+        async function shareGroupCode(i) {
+            const g = myGroups[i];
+            const text = `Únete a mi grupo "${g.name}" en SISTEMA DE DISCIPLINA. Código: ${g.code}`;
+            if (navigator.share) {
+                try { await navigator.share({ title: 'Grupo 🏆', text }); return; }
+                catch (e) { if (e.name === 'AbortError') return; }
+            }
+            try { await navigator.clipboard.writeText(g.code); alert('Código copiado: ' + g.code); }
+            catch { alert('Código del grupo: ' + g.code); }
+        }
+        async function doLeaveGroup(i) {
+            if (!confirm('¿Salir de este grupo?')) return;
+            await sb.rpc('leave_group', { p_group_id: myGroups[i].id });
+            renderGroupsList();
         }
 
         // ===== MOTIVACIÓN =====
