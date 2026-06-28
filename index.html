@@ -398,6 +398,14 @@
             padding: 20px;
         }
         .modal-overlay.hidden { display: none; }
+        .member-stats { display: flex; flex-direction: column; gap: 8px; }
+        .member-stats .ms {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface, #1a1a1a); border: 1px solid var(--border, #333);
+            border-radius: 10px; padding: 12px 16px;
+        }
+        .member-stats .ms-lbl { color: var(--text-dim); font-weight: 700; }
+        .member-stats .ms-num { font-size: 1.4rem; font-weight: 900; color: var(--accent); }
         .modal-box {
             background: var(--card); border: 2px solid var(--border);
             border-radius: 24px; padding: 28px; width: 100%; max-width: 360px;
@@ -764,6 +772,13 @@
             <div class="modal-date">🏆 GRUPOS</div>
             <div id="groups-body"></div>
             <button class="btn btn-no" style="margin-top:18px" onclick="closeGroups()">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="member-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeMember()">
+        <div class="modal-box">
+            <div id="member-body"></div>
+            <button class="btn btn-no" style="margin-top:18px" onclick="closeMember()">CERRAR</button>
         </div>
     </div>
 
@@ -1593,7 +1608,9 @@
         }
 
         // Construye la tabla (cabecera + podio + lista). Reusado por el modal y la sección fijada.
+        const boardCache = {}; // rows por grupo, para abrir detalle al tocar un miembro
         function boardBody(g, rows) {
+            boardCache[g.id] = rows;
             let html = `<div class="lb-head">
                 <div class="lb-group">${escHtml(g.name)}</div>
                 <button class="code-pill" onclick="copyCode('${g.code}')">CÓDIGO <b>${escHtml(g.code)}</b> 📋</button>
@@ -1602,7 +1619,7 @@
             const podiumCol = (m, rank) => {
                 if (!m) return '<div class="podium-col empty"></div>';
                 const medal = ['🥇', '🥈', '🥉'][rank - 1];
-                return `<div class="podium-col p${rank}${m.is_me ? ' me' : ''}">
+                return `<div class="podium-col p${rank}${m.is_me ? ' me' : ''}" style="cursor:pointer" onclick="showMember('${g.id}',${rank - 1})">
                     <div class="podium-medal">${medal}</div>
                     ${avatarHtml(m, rank === 1 ? 'av-lg' : 'av-md')}
                     <div class="podium-name">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</div>
@@ -1617,7 +1634,7 @@
             if (rest.length) {
                 html += '<div class="lb">';
                 rest.forEach((m, idx) => {
-                    html += `<div class="lb-row${m.is_me ? ' me' : ''}">
+                    html += `<div class="lb-row${m.is_me ? ' me' : ''}" style="cursor:pointer" onclick="showMember('${g.id}',${idx + 3})">
                         <span class="lb-pos">${idx + 4}</span>
                         ${avatarHtml(m, 'av-sm')}
                         <div class="lb-info">
@@ -1629,6 +1646,29 @@
                 html += '</div>';
             }
             return html;
+        }
+
+        // Detalle de un miembro del grupo al tocarlo en el ranking.
+        function showMember(gid, idx) {
+            const m = (boardCache[gid] || [])[idx];
+            if (!m) return;
+            document.getElementById('member-body').innerHTML = `
+                <div style="text-align:center">
+                    ${avatarHtml(m, 'av-lg')}
+                    <div style="font-size:1.4rem;font-weight:900;margin-top:10px">${escHtml(m.display_name)}${m.is_me ? ' (tú)' : ''}</div>
+                    <div style="color:var(--text-dim);margin-bottom:18px">#${idx + 1} del grupo</div>
+                </div>
+                <div class="member-stats">
+                    <div class="ms"><span class="ms-num">${m.current_streak}</span><span class="ms-lbl">🔥 racha</span></div>
+                    <div class="ms"><span class="ms-num">${m.perfect_days}</span><span class="ms-lbl">✨ días perfectos</span></div>
+                    <div class="ms"><span class="ms-num">${m.entrenos}</span><span class="ms-lbl">💪 entrenos</span></div>
+                    <div class="ms"><span class="ms-num">${m.cardios}</span><span class="ms-lbl">🏃 cardios</span></div>
+                    <div class="ms"><span class="ms-num">${m.rate}%</span><span class="ms-lbl">📊 constancia</span></div>
+                </div>`;
+            document.getElementById('member-modal').classList.remove('hidden');
+        }
+        function closeMember() {
+            document.getElementById('member-modal').classList.add('hidden');
         }
 
         async function openLeaderboard(i) {
