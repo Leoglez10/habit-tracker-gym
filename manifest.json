@@ -1,7 +1,7 @@
 {
   "name": "Sistema de Disciplina",
   "short_name": "Disciplina",
-  "description": "Tracker diario de gym y alimentación. Mantén la racha.",
+  "description": "Tracker diario de gym, cardio y alimentación para medir rachas, constancia y progreso.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

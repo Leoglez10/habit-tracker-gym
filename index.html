@@ -3,16 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Sistema de Disciplina es un tracker diario de gym, cardio y alimentación para medir rachas, constancia y progreso desde el celular.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="Sistema de Disciplina">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Disciplina">
     <meta name="theme-color" content="#000000">
-    <title>SISTEMA DE DISCIPLINA</title>
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_MX">
+    <meta property="og:title" content="Sistema de Disciplina | Tracker de Gym y Hábitos">
+    <meta property="og:description" content="Registra entrenamiento, cardio y comida limpia. Mantén tu racha diaria y mide tu constancia.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Sistema de Disciplina | Tracker de Gym y Hábitos">
+    <meta name="twitter:description" content="Tracker diario de gym, cardio y alimentación para mantener rachas y constancia.">
+    <title>Sistema de Disciplina | Tracker de Gym y Hábitos</title>
+    <link rel="canonical" href="/">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Sistema de Disciplina",
+      "alternateName": "Disciplina",
+      "description": "Tracker diario de gym, cardio y alimentación para registrar hábitos, rachas y constancia.",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "es-MX",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "MXN"
+      }
+    }
+    </script>
     <!-- Aplica el tema guardado antes de pintar para evitar parpadeo. -->
     <script>const _t = localStorage.getItem('theme'); if (_t) document.documentElement.dataset.theme = _t;</script>
     <style>
@@ -85,6 +113,18 @@
         [data-theme="lino"]{--bg:#1c1b19;--accent:#b8ab98;--fail:#d9755f;--warning:#d4a441;--rest:#8a9bab;--cardio:#cc8044;--card:#262421;--text:#e8e4dd;--text-dim:#948c7e;--text-faint:#615b50;--border:#33302b;--surface:#2c2925;--badge:#33302b;}
 
         * { -webkit-tap-highlight-color: transparent; }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
 
         body {
             background-color: var(--bg);
@@ -269,6 +309,8 @@
         }
         .day-dot.rest { background: var(--rest); color: black; box-shadow: 0 0 10px var(--rest); }
         .day-dot.cardio { background: var(--cardio); color: black; box-shadow: 0 0 10px var(--cardio); }
+        .day-dot.entreno { background: #2a1840; border: 2px solid #a855f7; color: #a855f7; box-shadow: 0 0 8px rgba(168,85,247,.4); }
+        .day-dot.comida { background: #06302c; border: 2px solid #14b8a6; color: #14b8a6; box-shadow: 0 0 8px rgba(20,184,166,.4); }
         .day-dot.half { border: 2px solid var(--warning); color: var(--warning); }
         .day-dot.failed {
             background: #2a0000;
@@ -426,7 +468,7 @@
             background: #2a0000; border: 1px solid var(--fail);
             color: var(--fail); border-radius: 14px;
             padding: 12px 16px; text-align: center;
-            font-size: .85rem; font-weight: 900; letter-spacing: .5px;
+            font-size: .85rem; font-weight: 900; letter-spacing: .5px; line-height: 1.4;
             box-shadow: 0 0 14px rgba(255, 0, 0, 0.35);
             animation: pulseDanger 1.6s ease-in-out infinite;
         }
@@ -455,6 +497,12 @@
             font-size: 1rem; cursor: pointer; padding: 4px;
         }
         .install-banner.hidden { display: none; } /* gana a display:flex por especificidad */
+        /* En cel la fila se aprieta: apila texto arriba, botón ancho abajo, ✕ a su lado. */
+        @media (max-width: 480px) {
+            .install-banner { flex-wrap: wrap; }
+            .install-banner #install-text { flex: 1 1 100%; }
+            .install-banner #install-btn { flex: 1; }
+        }
 
         /* #2 Frase diaria */
         .daily-quote {
@@ -649,6 +697,7 @@
     </style>
 </head>
 <body>
+    <h1 class="sr-only">Sistema de Disciplina: tracker diario de gym, cardio y alimentación</h1>
 
     <div id="danger-banner" class="danger-banner hidden"></div>
 
@@ -741,6 +790,8 @@
             <div id="modal-edit" class="hidden">
                 <button class="btn btn-yes" onclick="setDay('legendary')">DÍA PERFECTO ✨</button>
                 <button class="btn btn-yes" onclick="setDay('perfect')">ENTRENO + COMIDA 💪</button>
+                <button class="btn btn-rest" onclick="setDay('solo_entreno')" style="background:#2a1840;color:#a855f7;border:1px solid #a855f7;box-shadow:0 0 12px rgba(168,85,247,.15)">SOLO ENTRENO 💪</button>
+                <button class="btn btn-rest" onclick="setDay('solo_comida')" style="background:#06302c;color:#14b8a6;border:1px solid #14b8a6;box-shadow:0 0 12px rgba(20,184,166,.15)">SOLO COMIDA 🥗</button>
                 <button class="btn btn-rest" onclick="setDay('cardio_only')" style="background:#1f1405;color:var(--cardio);border:1px solid var(--cardio);box-shadow:0 0 12px rgba(255,140,0,.15)">SOLO CARDIO 🏃</button>
                 <button class="btn btn-rest" onclick="setDay('rest')">DESCANSO 🛌</button>
                 <button class="btn btn-no" onclick="setDay('failed')">DÍA FALLADO ❌</button>
@@ -1255,6 +1306,8 @@
                     else if (data.exercise === true && data.food) dot.classList.add('perfect');
                     else if (data.exercise === 'rest' && data.food) dot.classList.add('rest');
                     else if (data.cardio === true && data.food) dot.classList.add('cardio'); // solo cardio (sin gym)
+                    else if (data.exercise === true) dot.classList.add('entreno'); // solo entreno (sin comida)
+                    else if (data.food === true) dot.classList.add('comida'); // solo comida (sin entrenar)
                     else if (data.exercise || data.food || data.cardio) dot.classList.add('half');
                     else dot.classList.add('failed');
                 }
@@ -1332,6 +1385,8 @@
                 legendary:  { exercise: true,   cardio: true,  food: true  },
                 perfect:    { exercise: true,   cardio: false, food: true  },
                 cardio_only:{ exercise: false,  cardio: true,  food: true  },
+                solo_entreno:{ exercise: true,  cardio: null,  food: null  },
+                solo_comida:{ exercise: false,  cardio: null,  food: true  },
                 rest:       { exercise: 'rest', cardio: null,  food: true  },
                 failed:    { exercise: false,  cardio: null,  food: false },
             };

@@ -1,9 +1,10 @@
 // Service worker mínimo: cachea la app para que funcione sin internet.
-const CACHE = 'disciplina-v3';
+const CACHE = 'disciplina-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './robots.txt',
   './icon-192.png',
   './icon-512.png'
 ];
